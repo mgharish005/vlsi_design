@@ -15,6 +15,7 @@ output reg [15:0]  input_memory_address_pointer1,
 output reg [15:0]  scratch_memory_address_pointer0,  
 output reg write_enable, 
 output reg [127:0] scratch_memory_wdata, 
+output reg [15:0]  write_address, 
 
 //control interface inputs
 input set_read_address_input_mem, 
@@ -196,6 +197,7 @@ begin
     begin
         write_enable            <= 1'b0; 
         scratch_memory_wdata    <= 128'b0;  
+        write_address           <= 16'b0;  
     end
     else 
     begin
@@ -203,6 +205,7 @@ begin
         begin
             write_enable            <= 1'b1; 
             scratch_memory_wdata    <= wdata;  
+            write_address           <= scratch_memory_rw_address;  
         end
     end
 end
