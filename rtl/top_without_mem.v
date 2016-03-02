@@ -28,6 +28,8 @@ output input_write_addr,
 output input_wdata,
 output input_read_addr0,
 output input_read_addr1, 
+output input_rdata0,
+output input_rdata1, 
 
 ); 
     
@@ -73,29 +75,26 @@ mem_controller mem_controller_u0
     .cdf_en(cdf_en), 
     .divider_en(divider_en), 
 
-    .histogram_input_mem_rdata0(histogram_input_mem_rdata0), 
-    .histogram_input_mem_rdata1(histogram_input_mem_rdata1), 
+    .histogram_scratch_mem_raddr0(histogram_scratch_mem_raddr0), 
+    .histogram_scratch_mem_raddr1(histogram_scratch_mem_raddr1), 
     .histogram_scratch_mem_rdata0(histogram_scratch_mem_rdata0), 
     .histogram_scratch_mem_rdata1(histogram_scratch_mem_rdata1), 
     .histogram_scratch_mem_waddr(histogram_scratch_mem_waddr), 
     .histogram_scratch_mem_wdata(histogram_scratch_mem_wdata), 
     .histogram_scratch_mem_WE(histogram_scratch_mem_WE), 
 
-    .cdf_input_mem_rdata0(cdf_input_mem_rdata0), 
-    .cdf_input_mem_rdata1(cdf_input_mem_rdata1), 
+    .cdf_scratch_mem_read_addr0(cdf_scratch_mem_read_addr0), 
+    .cdf_scratch_mem_read_addr1(cdf_scratch_mem_read_addr1), 
     .cdf_scratch_mem_rdata0(cdf_scratch_mem_rdata0), 
     .cdf_scratch_mem_rdata1(cdf_scratch_mem_rdata1), 
     .cdf_scratch_mem_waddr(cdf_scratch_mem_waddr), 
     .cdf_scratch_mem_wdata(cdf_scratch_mem_wdata), 
     .cdf_scratch_mem_WE(cdf_scratch_mem_WE), 
     
-    .divider_input_mem_rdata0(divider_input_mem_rdata0), 
-    .divider_input_mem_rdata1(divider_input_mem_rdata1), 
+    .divider_scratch_mem_read_addr0(cdf_scratch_mem_read_addr0), 
+    .divider_scratch_mem_read_addr1(cdf_scratch_mem_read_addr1), 
     .divider_scratch_mem_rdata0(divider_scratch_mem_rdata0), 
     .divider_scratch_mem_rdata1(divider_scratch_mem_rdata1), 
-    .divider_scratch_mem_waddr(divider_scratch_mem_waddr), 
-    .divider_scratch_mem_wdata(divider_scratch_mem_wdata), 
-    .divider_scratch_mem_WE(divider_scratch_mem_WE), 
     
     .final_input_mem_rdata0(input_read_addr0), 
     .final_input_mem_rdata1(input_read_addr1), 
@@ -103,10 +102,26 @@ mem_controller mem_controller_u0
     .final_scratch_mem_rdata1(scratch_read_addr1), 
     .final_scratch_mem_waddr(scratch_write_addr), 
     .final_scratch_mem_wdata(scratch_wdata), 
-    .final_scratch_mem_WE(scratch_WE), 
-
-    
+    .final_scratch_mem_WE(scratch_WE),     
 ); 
+
+/*
+sram_2R1W input_mem
+(
+    .clock(clock), 
+    .WE(0), 
+    .WriteAddress(16'b0), 
+    .WriteBus(128'b0), 
+    .ReadAddress1(histogram_input_mem_raddr0), 
+    .ReadAddress2(histogram_input_mem_raddr1), 
+    .ReadBus1(histogram_input_mem_rdata0), 
+    .ReadBus2(histogram_input_mem_rdata1), 
+
+);
+
+*/
+
+
 
 histogram_equalizer_core histogram_equalizer_core_u0
 (
@@ -114,25 +129,39 @@ histogram_equalizer_core histogram_equalizer_core_u0
 .clock(clock), 
 .reset(reset),
 
- //scratch mem interface
-.scratch_WE(histogram_scratch_mem_WE), 
-.scratch_write_addr(histogram_scratch_mem_waddr), 
-.scratch_wdata(histogram_scratch_mem_wdata), 
-.scratch_read_addr0(histogram_scratch_mem_rdata1), 
-.scratch_read_addr1(histogram_scratch_mem_rdata1), 
-.scratch_rdata0(histogram_scratch_mem_rdata0), 
-.scratch_rdata1(histogram_scratch_mem_rdata1),
+.histogram_input_mem_raddr0(input_mem_raddr0), 
+.histogram_input_mem_raddr1(input_mem_raddr1), 
+.histogram_input_mem_rdata0(input_mem_rdata0), 
+.histogram_input_mem_rdata1(input_mem_rdata1), 
 
-//input mem interface
-.input_WE(input_WE), 
-.input_write_addr(input_write_addr), 
-.input_wdata(input_wdata), 
-.input_read_addr0(input_read_addr0), 
-.input_read_addr1(input_read_addr1), 
-.input_rdata0(input_rdata0), 
-.input_rdata1(input_rdata1), 
+.histogram_scratch_mem_raddr0(histogram_scratch_mem_raddr0), 
+.histogram_scratch_mem_raddr1(histogram_scratch_mem_raddr1), 
+.histogram_scratch_mem_rdata0(histogram_scratch_mem_rdata0), 
+.histogram_scratch_mem_rdata1(histogram_scratch_mem_rdata1), 
+.histogram_scratch_mem_waddr(histogram_scratch_mem_waddr), 
+.histogram_scratch_mem_wdata(histogram_scratch_mem_wdata), 
+.histogram_scratch_mem_WE(histogram_scratch_mem_WE), 
 
-//FSM
+.cdf_scratch_mem_read_addr0(cdf_scratch_mem_raddr0), 
+.cdf_scratch_mem_read_addr1(cdf_scratch_mem_raddr1), 
+.cdf_scratch_mem_rdata0(cdf_scratch_mem_rdata0), 
+.cdf_scratch_mem_rdata1(cdf_scratch_mem_rdata1), 
+.cdf_scratch_mem_waddr(cdf_scratch_mem_waddr), 
+.cdf_scratch_mem_wdata(cdf_scratch_mem_wdata), 
+.cdf_scratch_mem_WE(cdf_scratch_mem_WE), 
+
+
+.divider_output_mem_rdata0(divider_output_mem_rdata0), 
+.divider_output_mem_rdata1(divider_output_mem_rdata1), 
+.divider_scratch_mem_read_addr0(cdf_scratch_mem_read_addr0), 
+.divider_scratch_mem_read_addr1(cdf_scratch_mem_read_addr1), 
+.divider_scratch_mem_rdata0(divider_scratch_mem_rdata0), 
+.divider_scratch_mem_rdata1(divider_scratch_mem_rdata1), 
+
+
+
+//FSM interface
 .start_histogram(start_histogram)
+.histogram_computation_done(histogram_computation_done), 
 .input_memory_read_finished(input_memory_read_finished)
 ); 
