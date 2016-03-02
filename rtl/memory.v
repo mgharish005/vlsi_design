@@ -1,5 +1,6 @@
 
-module sram_2R1W (clock, WE, WriteAddress,ReadAddress1,ReadAddress2, WriteBus, ReadBus1,ReadBus2);
+module memory (clock, WE, WriteAddress,ReadAddress1,ReadAddress2, WriteBus, ReadBus1,ReadBus2);
+
 input  clock, WE; 
 input  [15:0] WriteAddress, ReadAddress1,ReadAddress2; 
 input  [127:0] WriteBus;
