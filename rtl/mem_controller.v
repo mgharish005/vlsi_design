@@ -26,9 +26,6 @@ module mem_controller
     input divider_scratch_mem_rdata1, 
     input divider_scratch_mem_raddr0, 
     input divider_scratch_mem_raddr1, 
-    input divider_scratch_mem_waddr, 
-    input divider_scratch_mem_wdata, 
-    input divider_scratch_mem_WE, 
 
 
 
@@ -73,9 +70,9 @@ case({histogram_en, cdf_en, divider_en})
         final_scratch_mem_rdata1 = divider_scratch_mem_rdata1; 
         final_scratch_mem_raddr0 = divider_scratch_mem_raddr0; 
         final_scratch_mem_raddr1 = divider_scratch_mem_raddr1; 
-        final_scratch_mem_waddr = divider_scratch_mem_waddr; 
-        final_scratch_mem_wdata = divider_scratch_mem_wdata; 
-        final_scratch_mem_WE = divider_scratch_mem_WE
+        final_scratch_mem_waddr = 0; 
+        final_scratch_mem_wdata = 0; 
+        final_scratch_mem_WE = 0; 
     end
     default : 
     begin
