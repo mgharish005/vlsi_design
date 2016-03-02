@@ -15,9 +15,6 @@ output reg shift_scratch_memory_rw_address,
 output reg read_data_ready_input_mem, 
 output reg histogram_computation_done,   
 output reg read_data_ready_scratch_mem  
-
-
-
 ); 
 
 
