@@ -1,16 +1,19 @@
-`include "divider.v"
+`include "rtl/divider/divider.v"
 
 module divider_tb ;
 
-  reg clk, reset;
+  reg        clk;
+  reg        reset;
   reg  [7:0] cdf_in;
   wire [7:0] g_out;
+  wire       ready_g_out;
   
   divider d1(
-  .clk        (clk),
-  .reset      (reset),
-  .cdf_in     (cdf_in),
-  .g_out      (g_out)
+  .clk           (clk),
+  .reset         (reset),
+  .cdf_in        (cdf_in),
+  .g_out         (g_out),
+  .ready_g_out   (ready_g_out)
   );
   
   initial
@@ -18,9 +21,8 @@ module divider_tb ;
   
   clk = 1;
   reset = 1;
-  cdf_in = 8'd1;
+  cdf_in = 8'd4;
   #5 reset = 0;
-  #30 cdf_in = 8'd4;
   end
   
   always 

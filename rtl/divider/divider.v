@@ -1,12 +1,12 @@
-`include "D_FLOP_1REG.v"
-`include "D_FLOP_16REG.v"
+`include "rtl/divider/D_FLOP_16REG.v"
 
 module divider 
 (
 input  wire         clk,
 input  wire         reset,
 input  wire [7:0]   cdf_in,
-output reg  [7:0]   g_out
+output reg  [7:0]   g_out,
+output reg          ready_g_out
 );
 
 wire  [15:0] g_dividend_In;
@@ -38,10 +38,14 @@ assign     g_divider_In[15:0]     =    {8'd0, (SIZE - CDFMIN)};
   
 always @(posedge clk)
 begin
- if(reset)  
+ if(reset) begin
    g_out <= 8'd0;
- else
+   ready_g_out <= 1'b0;
+ end
+ else begin
    g_out <= 8'b11111111;
+   ready_g_out <= 1'b0;
+ end
 end
 endmodule
    
