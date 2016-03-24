@@ -38,7 +38,8 @@ reg [255:0] scratch_memory_rw_address ;
 reg [255:0] offset_reg ; 
 reg [127:0] local_scratch_memory_data ; 
 reg [127:0] wdata ; 
-
+reg [63:0] has_nz_data; 
+wire scratch_memory_read_out_data_is_not_x ; 
 
 
 //address pointer logic for input_memory read
@@ -101,7 +102,22 @@ begin
     end
 end
 
-
+//get offset_reg
+always@(posedge clock)
+begin
+    if(reset)
+    begin
+        offset_reg  <= 128'b0;  
+    end
+    else if(read_data_ready_input_mem) 
+    begin 
+        offset_reg <= {{input_memory_rdata1 & 128'h03030303_03030303_03030303_03030303}, {input_memory_rdata0 & 128'h03030303_03030303_03030303_03030303} }; 
+    end
+    else if(shift_scratch_memory_rw_address)
+    begin
+        offset_reg                <= (offset_reg >> 8); 
+    end
+end
 
 //Get bin address for scratch rw. 
 always@(posedge clock) 
@@ -109,11 +125,9 @@ begin
     if(reset)
     begin
         scratch_memory_rw_address <= 128'b0;  
-        offset_reg  <= 128'b0;  
     end
     else if(read_data_ready_input_mem) 
     begin 
-        offset_reg                         <= {{input_memory_rdata1 && 128'hffffffff_ffffffff_ffffffff_ffffffff}, {input_memory_rdata0 && 128'hffffffff_ffffffff_ffffffff_ffffffff} }; 
         scratch_memory_rw_address[255:128] <= {input_memory_rdata1[127:120] >> 2,
                                                input_memory_rdata1[119:112] >> 2, 
                                                input_memory_rdata1[111:104] >> 2, 
@@ -152,10 +166,11 @@ begin
     end    
     else if(shift_scratch_memory_rw_address)
     begin
-        scratch_memory_rw_address <= scratch_memory_rw_address >> 8; 
-        offset_reg                <= offset_reg >> 8; 
+        scratch_memory_rw_address <= (scratch_memory_rw_address >> 8); 
     end 
 end 
+
+assign scratch_memory_read_out_data_is_not_x = (read_data_ready_scratch_mem) ? (1<< scratch_memory_address_pointer0 & has_nz_data) : 1'b0;  
 
 //read from scratch memory
 always@(posedge clock) 
@@ -164,11 +179,15 @@ begin
     begin
         local_scratch_memory_data <= 128'b0;  
     end
-    else
+    else if(read_data_ready_scratch_mem)
     begin
-        if(read_data_ready_scratch_mem)
+        if(scratch_memory_read_out_data_is_not_x)
         begin
             local_scratch_memory_data <= scratch_memory_rdata0; 
+        end
+        else
+        begin
+            local_scratch_memory_data <= 128'b0; 
         end
     end     
 end 
@@ -182,11 +201,12 @@ begin
   //d = scratch_memory_rdata[31: 0]  + 1'b1;   
 
     case(offset)
-    8'd0 : wdata = {{scratch_memory_rdata0[127:96] + 1'b1} , scratch_memory_rdata0[95:0]};
-    8'd1 : wdata = {scratch_memory_rdata0[127:95], {scratch_memory_rdata0[95:64] + 1'b1}, scratch_memory_rdata0[63:0]};  
-    8'd2 : wdata = {scratch_memory_rdata0[127:64], {scratch_memory_rdata0[63:31] + 1'b1}, scratch_memory_rdata0[31:0]}; 
-    8'd3 : wdata = {scratch_memory_rdata0[127:32], {scratch_memory_rdata0[31: 0] + 1'b1} };  
-    default : wdata = scratch_memory_rdata0; 
+    8'd0 : wdata = {{local_scratch_memory_data[127:96] + 1'b1} , local_scratch_memory_data[95:0]};
+    8'd1 : wdata = {local_scratch_memory_data[127:95], {local_scratch_memory_data[95:64] + 1'b1}, local_scratch_memory_data[63:0]};  
+    8'd2 : wdata = {local_scratch_memory_data[127:64], {local_scratch_memory_data[63:31] + 1'b1}, local_scratch_memory_data[31:0]}; 
+    8'd3 : wdata = {local_scratch_memory_data[127:32], {local_scratch_memory_data[31: 0] + 1'b1} };  
+
+    default : wdata = 1'b1; //scratch_memory_rdata0; 
     endcase
 end
 
@@ -199,17 +219,32 @@ begin
         scratch_memory_wdata    <= 128'b0;  
         write_address           <= 16'b0;  
     end
-    else 
+    else if(set_read_address_scratch_mem)
+    begin
+        write_enable <= 1'b0; 
+    end 
     begin
         if(set_write_address_scratch_mem)
         begin
             write_enable            <= 1'b1; 
             scratch_memory_wdata    <= wdata;  
-            write_address           <= scratch_memory_rw_address;  
+            write_address           <= scratch_memory_rw_address[7:0];  
         end
     end
 end
 
+always@(posedge clock)
+begin
+    if(reset)
+    begin
+        has_nz_data <= 64'b0; 
+    end
+    else if(set_write_address_scratch_mem)
+    begin
+        has_nz_data <= has_nz_data | (1<<scratch_memory_rw_address[7:0]); 
+    end
+
+end
 
 endmodule
 
