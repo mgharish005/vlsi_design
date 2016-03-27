@@ -23,6 +23,7 @@ module divider_tb ;
   reset = 1;
   cdf_in = 8'd4;
   #5 reset = 0;
+  #40 cdf_in = 8'd10;
   end
   
   always 
