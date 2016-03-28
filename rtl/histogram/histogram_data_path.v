@@ -33,7 +33,7 @@ output all_pixel_written
 
 reg first_time ; 
 reg [7:0] offset ; 
-reg [6:0] counter ; 
+reg [5:0] counter ; 
 reg [255:0] scratch_memory_rw_address ; 
 reg [255:0] offset_reg ; 
 reg [127:0] local_scratch_memory_data ; 
@@ -87,7 +87,7 @@ begin
 end
 
 
-assign all_pixel_written = counter[6];  
+assign all_pixel_written = counter[5];  
 
 //pixel process counter
 always@(posedge clock)
