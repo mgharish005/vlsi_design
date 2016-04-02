@@ -23,19 +23,7 @@ parameter DYN_RANGE = 8;
 assign     g_dividend_In[15:0]    =    (((cdf_in - CDFMIN)<<DYN_RANGE) - (cdf_in - CDFMIN));
 assign     g_divider_In[15:0]     =    {8'd0, (SIZE - CDFMIN)};
 
- /* 
-always @(posedge clk)
-begin
- if(reset) begin
-   g_out <= 8'd0;
-   ready_g_out <= 1'b0;
- end
- else begin
-   g_out <= 8'b11111111;
-   ready_g_out <= 1'b0;
- end
-end
-*/
+
 always @(posedge clk)
 begin
  if(reset) begin

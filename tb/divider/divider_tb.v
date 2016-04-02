@@ -24,10 +24,11 @@ module divider_tb ;
   clk = 1;
   reset = 1;
   enable = 0;
-  cdf_in = 8'd4;
+  cdf_in = 8'd1;
   #5 reset = 0;
   #25 enable = 1;
   #10 enable = 0;
+  #10 cdf_in = 8'd4;
   end
   
   always 
