@@ -206,7 +206,7 @@ begin
     8'd2 : wdata = {local_scratch_memory_data[127:64], {local_scratch_memory_data[63:31] + 1'b1}, local_scratch_memory_data[31:0]}; 
     8'd3 : wdata = {local_scratch_memory_data[127:32], {local_scratch_memory_data[31: 0] + 1'b1} };  
 
-    default : wdata = 1'b1; //scratch_memory_rdata0; 
+    default : wdata = 128'b0; //scratch_memory_rdata0; 
     endcase
 end
 

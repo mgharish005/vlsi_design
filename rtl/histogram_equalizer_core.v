@@ -16,43 +16,52 @@ input [127:0] divider_scratch_mem_rdata1,
 //2. from input memory
 input [127:0] histogram_input_mem_rdata0,
 input [127:0] histogram_input_mem_rdata1,
+input [127:0] divider_input_mem_rdata0,
+input [127:0] divider_input_mem_rdata1,
 
 
 //3. from master FSM
 input start_histogram, 
-input input_memory_read_finished, 
+input start_cdf,
+input start_divider,
+input input_mem_read_finished, 
 
 //Outputs------------------------------------------------------
-//1. to scratch memory
+//1.1 to scratch memory - write
 output histogram_scratch_mem_WE,
-output cdf_scratch_WE,
+output cdf_scratch_mem_WE,
+output divider_scratch_mem_WE,
 
-output [15:0] histogram_scratch_mem_waddr,
-output [15:0] cdf_scratch_mem_waddr,
+output [15:0]  histogram_scratch_mem_waddr,
+output [15:0]  cdf_scratch_mem_waddr,
+output [15:0]  divider_scratch_mem_waddr,
 
+output [127:0] histogram_scratch_mem_wdata, 
+output [127:0] cdf_scratch_mem_wdata, 
+output [127:0] divider_scratch_mem_wdata, 
 
-output [127:0] histogram_scratch_mem_wdata,
-output [127:0] cdf_scratch_wdata,
-
-
-output histogram_scratch_mem_raddr0,
-output histogram_scratch_mem_raddr1,
-output cdf_scratch_mem_raddr0,
-output cdf_scratch_mem_raddr1,
-output divider_scratch_mem_raddr0,
-output divider_scratch_mem_raddr1,
+//1.2 to scratch memory - read
+output [15:0] histogram_scratch_mem_raddr0,
+output [15:0] histogram_scratch_mem_raddr1,
+output [15:0] cdf_scratch_mem_raddr0,
+output [15:0] cdf_scratch_mem_raddr1,
+output [15:0] divider_scratch_mem_raddr0,
+output [15:0] divider_scratch_mem_raddr1,
 
 
 //2. to input memory
-output histogram_input_mem_raddr0,
-output histogram_input_mem_raddr1, 
+output [15:0] histogram_input_mem_raddr0,
+output [15:0] histogram_input_mem_raddr1, 
+output [15:0] divider_input_mem_raddr0,
+output [15:0] divider_input_mem_raddr1, 
 
 //3. to output memory, 
-output divider_output_mem_read_addr0, 
-output divider_output_mem_read_addr1, 
+output [127:0] divider_output_mem_wdata, 
+output divider_output_mem_WE, 
+output [15:0] divider_output_mem_waddr, 
 
-//3. to master FSM
-output histogram_computation_done, 
+//4. to master FSM
+output histogram_computation_done  
 ); 
 
 //wires
@@ -63,7 +72,6 @@ wire set_write_address_scratch_mem;
 wire shift_scratch_memory_rw_address; 
 wire read_data_ready_input_mem; 
 wire read_data_ready_scratch_mem; 
-wire all_pixel_written; 
 
 //control path
 histogram_data_path histogram_data_path_u0 
@@ -98,7 +106,7 @@ histogram_control histogram_control_u0
 .clock(clock), 
 .reset(reset), 
 .start_histogram(start_histogram), 
-.input_memory_read_finished(input_memory_read_finished), 
+.input_memory_read_finished(input_mem_read_finished), 
 .all_pixel_written(all_pixel_written), 
 
 .set_read_address_input_mem(set_read_address_input_mem), 
@@ -106,8 +114,9 @@ histogram_control histogram_control_u0
 .set_write_address_scratch_mem(set_write_address_scratch_mem), 
 .shift_scratch_memory_rw_address(shift_scratch_memory_rw_address), 
 .read_data_ready_input_mem(read_data_ready_input_mem), 
-.histogram_computation_done(histogram_computation_done)
-.read_data_ready_scratch_mem(read_data_ready_scratch_mem), 
+.histogram_computation_done(histogram_computation_done),
+.read_data_ready_scratch_mem(read_data_ready_scratch_mem)  
 ); 
+
 
 endmodule
