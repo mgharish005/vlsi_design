@@ -1,7 +1,7 @@
 module  binary_divider(
 input  wire         clk,
 input  wire         reset,
-input  wire         enable,
+input  wire         div_en,
 input  wire [15:0]  g_dividend_Q,
 input  wire [15:0]  g_divider_Q,
 output reg  [7:0]   quotient,
@@ -52,14 +52,14 @@ always @(*) begin
 
 case(state)
 
-   IDLE:begin  //Waits for Enable to begin division
+   IDLE:begin  //Waits for Division Enable to begin division
     next_q      = 8'd0;
 	next_rem    = g_dividend_Q;
 	next_prod   = g_divider_Q << 15;
 	next_term   = 16'h8000;
 	next_done   = 1'b0;
 	
-	if(enable) begin
+	if(div_en) begin
 	  next_state = RUN;
 	end
 	else begin
