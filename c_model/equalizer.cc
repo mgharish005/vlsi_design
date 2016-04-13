@@ -31,42 +31,51 @@ void print_bits(uint32_t num)
 	 }
 }
 
+uint8_t conv2hex(char c)
+{
+   switch(c)
+   {
+           case '0' : return 0;          
+           case '1' : return 1;          
+           case '2' : return 2;          
+           case '3' : return 3;          
+           case '4' : return 4;          
+           case '5' : return 5;          
+           case '6' : return 6;          
+           case '7' : return 7;          
+           case '8' : return 8;          
+           case '9' : return 9;          
+           case 'A' : return 10;          
+           case 'B' : return 11;          
+           case 'C' : return 12;          
+           case 'D' : return 13;          
+           case 'E' : return 14;          
+           case 'F' : return 15;          
+           default : printf("input image not in format"); return 0;  
+   } 
+}
 uint128_t read_one_line()
 {
 	 uint128_t val; 
-    uint32_t val0, val1, val2, val3; 
-    uint32_t mask1 = 0xF000; 
-    uint32_t mask2 = 0x0F00; 
-    uint32_t mask3 = 0x00F0; 
-    uint32_t mask4 = 0x000F; 
-
+    
     //reading 32 hexa decimal value in a line - memory width is 128 bits 
-//  if(fscanf(pFile, "%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x%x\n", &val) !=EOF)
-    if(fscanf(pFile, "%x%x%x%x\n", &val0, &val1, &val2, &val3) !=EOF)
-	 {
-         val.t[0] = val0 && mask1 >> 0xc; 
-         val.t[1] = val0 && mask2 >> 0x8; 
-         val.t[2] = val0 && mask3 >> 0x4; 
-         val.t[3] = val0 && mask4; 
-         
-         val.t[4] = val1 && mask1 >> 0xc; 
-         val.t[5] = val1 && mask2 >> 0x8; 
-         val.t[6] = val1 && mask3 >> 0x4; 
-         val.t[7] = val1 && mask4; 
+    for(int i = 0; i<= 16; i++)
+    {
+        char get_a = (char)getc(pFile); 
 
-         val.t[8]  = val2 && mask1 >> 0xc; 
-         val.t[9]  = val2 && mask2 >> 0x8; 
-         val.t[10] = val2 && mask3 >> 0x4; 
-         val.t[11] = val2 && mask4; 
-         
-         val.t[12] = val3 && mask1 >> 0xc; 
-         val.t[13] = val3 && mask2 >> 0x8; 
-         val.t[14] = val3 && mask3 >> 0x4; 
-         val.t[15] = val3 && mask4; 
-    		return val; 
-	 }
-	 else
-    		printf("FATAL! File illegal"); 
+        if(get_a == '\n')
+        {
+            printf("\n"); 
+            return val; 
+        }
+        else
+        {
+            char get_b = (char)getc(pFile); 
+            val.t[i] = (conv2hex(get_a))<<4 | conv2hex(get_b); 
+            printf("%02x", val.t[i]); 
+        }
+    }
+
 }
 
 uint8_t** load_image(uint32_t m, uint32_t n)  
@@ -109,7 +118,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
 	 	printf("Unable to allocate memory for histogram"); 	
     for(int i = 0; i<m; i++)
 	 {
-    		*(f+i) = (uint8_t*)malloc(sizeof(uint32_t)*n); 
+    		*(f+i) = (uint8_t*)malloc(sizeof(uint8_t)*n); 
     		for(int j = 0; j< n; j++)
     		{
             h_index = *(*f+i)+j & two_pow_l; 
@@ -117,27 +126,29 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
                 printf("FATAL Issue - due to h_index >= 2^l"); 
             (*(h + h_index)) ++ ; 
 
-            fprintf(pFile_hist_waddr, "%d\n", (h_index/4); 
+          //printf("h_index = %0d\n", h_index); 
+          //printf("h_index/4 = %0d\n", h_index/4); 
+            fprintf(pFile_hist_waddr, "%d\n", (h_index/4)); 
             //for scoreboarding
             if(h_index < 4)
             {
-                fprintf(pFile_hist_wdata, "%x%x%x%x\n", *h, *(h+1), *(h+2), *(h+3));   
+                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *h, *(h+1), *(h+2), *(h+3));   
             } 
             else if (h_index % 4)
             {
-                fprintf(pFile_hist_wdata, "%x%x%x%x\n", *(h+h_index),*(h+h_index+1),*(h+h_index+2),*(h+h_index+3));  
+                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index),*(h+h_index+1),*(h+h_index+2),*(h+h_index+3));  
             } 
             else if ((h_index-1) % 4)
             {
-                fprintf(pFile_hist_wdata, "%x%x%x%x\n", *(h+h_index-1),*(h+h_index),*(h+h_index+1),*(h+h_index+2));  
+                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-1),*(h+h_index),*(h+h_index+1),*(h+h_index+2));  
             }
             else if ((h_index-2) % 4)
             {
-                fprintf(pFile_hist_wdata, "%x%x%x%x\n", *(h+h_index-2),*(h+h_index-1),*(h+h_index),*(h+h_index+1));  
+                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-2),*(h+h_index-1),*(h+h_index),*(h+h_index+1));  
             }
             else if ((h_index-3) % 4)
             {
-                fprintf(pFile_hist_wdata, "%x%x%x%x\n", *(h+h_index-3),*(h+h_index-2),*(h+h_index-1),*(h+h_index));  
+                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-3),*(h+h_index-2),*(h+h_index-1),*(h+h_index));  
             }
     		}
     }
