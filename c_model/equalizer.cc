@@ -84,14 +84,14 @@ uint8_t** load_image(uint32_t m, uint32_t n)
 	 uint8_t** input_image;
     	
 
-	 input_image = (uint8_t**)malloc(sizeof(uint8_t*)*m);  	
+	 input_image = (uint8_t**)malloc(sizeof(uint8_t*)*n);  	
 	 if(!input_image)
 	 	printf("Unable to allocate memory for image"); 	
-	 for(int i = 0; i<m; i++)
+	 for(int i = 0; i<n; i++)
 	 {
         local_line = read_one_line(); 
-    		*(input_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*n); 
-    		for(int j = 0; j< n; j++)
+    		*(input_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*m); 
+    		for(int j = 0; j< m; j++)
     		{
     			*(*(input_image+i) + j) = local_line.t[j]; 
     		}
@@ -116,12 +116,14 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
     h = (uint32_t*)malloc(sizeof(uint32_t)*two_pow_l); 
     if(!h)
 	 	printf("Unable to allocate memory for histogram"); 	
-    for(int i = 0; i<m; i++)
+    for(int i = 0; i<n; i++)
 	 {
-    		*(f+i) = (uint8_t*)malloc(sizeof(uint8_t)*n); 
-    		for(int j = 0; j< n; j++)
+         printf("\n"); 
+    		for(int j = 0; j< m; j++)
     		{
-            h_index = *(*f+i)+j & two_pow_l; 
+            h_index = *(*(f+i)+j) & two_pow_l; 
+     //     printf("%x", *(*(f+i)+j));
+            printf("%x", h_index); 
             if(h_index >= 1<<l)
                 printf("FATAL Issue - due to h_index >= 2^l"); 
             (*(h + h_index)) ++ ; 
@@ -233,7 +235,7 @@ int main(int argc, char *argv[])
   	 f = load_image(M, N); 
    
     //2. draw histogram 
-    h = draw_histogram(f,l, 64, 4); //there are only 255 bins possible
+    h = draw_histogram(f,l, M, N); //there are only 255 bins possible
     
     //3. calculate cdf
     cdf = compute_cdf(h,l);   
