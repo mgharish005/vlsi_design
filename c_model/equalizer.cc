@@ -119,7 +119,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
     for(int i = 0; i<n; i++)
 	 {
          printf("\n"); 
-    		for(int j = 0; j< m; j++)
+    		for(int j = m-1; j>=0; j--)
     		{
             h_index = *(*(f+i)+j) & two_pow_l; 
      //     printf("%x", *(*(f+i)+j));
@@ -130,7 +130,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
 
           //printf("h_index = %0d\n", h_index); 
           //printf("h_index/4 = %0d\n", h_index/4); 
-            fprintf(pFile_hist_waddr, "%d\n", (h_index/4)); 
+            fprintf(pFile_hist_waddr, "%d\n", (h_index>>2)); 
             //for scoreboarding
             if(h_index < 4)
             {
