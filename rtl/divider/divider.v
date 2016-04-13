@@ -5,6 +5,7 @@ module divider
 input  wire         clk,
 input  wire         reset,
 input  wire         enable,
+input  wire         div_en,
 input  wire [7:0]   cdf_in,
 output wire [7:0]   g_out,
 output wire         ready_g_out
@@ -39,7 +40,7 @@ end
 binary_divider div01 (
         .clk            (clk),
 		.reset          (reset),
-		.enable         (enable),
+		.div_en         (div_en),
 		.g_dividend_Q   (g_dividend_Q),
 		.g_divider_Q    (g_divider_Q),
 		.quotient       (g_out),
