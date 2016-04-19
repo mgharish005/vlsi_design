@@ -27,7 +27,9 @@ S4 = 4'b0100,
 S5 = 4'b0101, 
 S6 = 4'b0110, 
 S7 = 4'b0111, 
-S8 = 4'b1000; 
+S8 = 4'b1000, 
+S9 = 4'b1001, 
+S10 = 4'b1010; 
 
 
 reg [3:0] current_state; 
@@ -76,6 +78,11 @@ begin
         next_state = S3; 
     end
     S3 : 
+    //empty clock 
+    begin
+        next_state = S4; 
+    end
+    S4 : 
     //empty clock - read from input memory
     begin
         read_data_ready_input_mem = 1'b1; 
@@ -87,40 +94,45 @@ begin
         else
         begin
             histogram_computation_done = 0; 
-            next_state = S4; 
+            next_state = S5; 
         end
     end
-    S4 : 
+    S5 : 
     begin
     //take each pixel and compute scratch memory address and set read address (from scratch memory)
         set_read_address_scratch_mem = 1'b1; 
-        next_state = S5; 
-    end 
-    S5 : 
-    //empty clock 
-    begin
         next_state = S6; 
-    end
+    end 
     S6 : 
     //empty clock 
     begin
-        read_data_ready_scratch_mem = 1'b1; 
         next_state = S7; 
     end
     S7 : 
+    //empty clock 
+    begin
+        next_state = S8; 
+    end
+    S8 : 
+    //empty clock 
+    begin
+        read_data_ready_scratch_mem = 1'b1; 
+        next_state = S9; 
+    end
+    S9 : 
     //for write, set write addresses, WE, wdata
     begin
         set_write_address_scratch_mem = 1'b1; 
-        next_state = S8; 
+        next_state = S10; 
     end  
-    S8 : 
+    S10 : 
     //shift the rw_memory array, offset and check if all pixel done
     begin
         shift_scratch_memory_rw_address = 1'b1; 
         if(all_pixel_written)
             next_state = S1; 
         else
-            next_state = S4;  
+            next_state = S5;  
     end  
 
     endcase
