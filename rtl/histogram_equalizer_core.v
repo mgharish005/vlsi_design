@@ -81,7 +81,7 @@ histogram_data_path histogram_data_path_u0
 
 .input_memory_rdata0(histogram_input_mem_rdata0), 
 .input_memory_rdata1(histogram_input_mem_rdata1), 
-.scratch_memory_rdata0(histogram_scratch_mem_rdata0), 
+.scratch_memory_rdata0(histogram_scratch_mem_rdata1), 
 
 .input_memory_address_pointer0(histogram_input_mem_raddr0), 
 .input_memory_address_pointer1(histogram_input_mem_raddr1), 
