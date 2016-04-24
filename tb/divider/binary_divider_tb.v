@@ -5,9 +5,9 @@ module binary_divider_tb;
   reg         clk;
   reg         reset;
   reg         div_en;
-  reg  [15:0] g_dividend_Q;
-  reg  [15:0] g_divider_Q;
-  wire [7:0]  quotient;
+  reg  [63:0] g_dividend_Q;
+  reg  [63:0] g_divider_Q;
+  wire [31:0] quotient;
   wire        done;
   
   binary_divider div_compute1 (
@@ -26,8 +26,8 @@ module binary_divider_tb;
   clk = 1;
   reset = 1;
   div_en = 0;
-  g_dividend_Q = 16'd765;
-  g_divider_Q = 16'd63; 
+  g_dividend_Q = 64'd765;
+  g_divider_Q = 64'd63; 
   #10 reset = 0;
   #20 div_en = 1;
   #10 div_en = 0;
@@ -47,7 +47,7 @@ module binary_divider_tb;
   end
   
   initial
-  #800 $finish;
+  #80000 $finish;
   
 endmodule
   

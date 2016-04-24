@@ -2,9 +2,9 @@ module  binary_divider(
 input  wire         clk,
 input  wire         reset,
 input  wire         div_en,
-input  wire [15:0]  g_dividend_Q,
-input  wire [15:0]  g_divider_Q,
-output reg  [7:0]   quotient,
+input  wire [63:0]  g_dividend_Q,
+input  wire [63:0]  g_divider_Q,
+output reg  [31:0]  quotient,
 output reg          done
 );
 
@@ -16,13 +16,13 @@ parameter
 
 reg   [1:0]   state;
 reg   [1:0]   next_state;
-reg   [15:0]  rem;
-reg   [15:0]  next_rem;
-reg   [31:0]  prod;
-reg   [31:0]  next_prod;
-reg   [15:0]  term;
-reg   [15:0]  next_term;
-reg   [7:0]   next_q;
+reg   [63:0]  rem;
+reg   [63:0]  next_rem;
+reg   [127:0] prod;
+reg   [127:0] next_prod;
+reg   [63:0]  term;
+reg   [63:0]  next_term;
+reg   [31:0]  next_q;
 reg           next_done;
 
 //Moore output updates
@@ -30,10 +30,10 @@ always @(posedge clk) begin
 
   if(reset) begin
     state     <= IDLE;
-	quotient  <= 8'd0;
-    rem       <= 16'd0;
-	prod      <= 32'd0;
-	term      <= 16'd0;
+	quotient  <= 32'd0;
+    rem       <= 64'd0;
+	prod      <= 128'd0;
+	term      <= 64'd0;
 	done      <= 1'b0;
   end
   else begin
@@ -53,10 +53,10 @@ always @(*) begin
 case(state)
 
    IDLE:begin  //Waits for Division Enable to begin division
-    next_q      = 8'd0;
+    next_q      = 32'd0;
 	next_rem    = g_dividend_Q;
-	next_prod   = g_divider_Q << 15;
-	next_term   = 16'h8000;
+	next_prod   = g_divider_Q << 31;
+	next_term   = 32'h80000000;
 	next_done   = 1'b0;
 	
 	if(div_en) begin
@@ -67,7 +67,7 @@ case(state)
 	end
    end
 
-   RUN:begin  //Runs division for 16 cycles
+   RUN:begin  //Runs division for 64 cycles
     if(~term[0]) begin
 	  next_prod  = prod >> 1;
 	  next_term  = term >> 1;
@@ -84,7 +84,7 @@ case(state)
    end
 
    COMPLETE:begin  
-   //End of 16 cycles, Indicates DONE and goes back to IDLE 
+   //End of 64 cycles, Indicates DONE and goes back to IDLE 
    //and waits for next enable
     next_done  = 1'b1;
 	next_state = IDLE;

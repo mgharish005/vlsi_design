@@ -2,13 +2,13 @@
 
 module divider_tb ;
 
-  reg        clk;
-  reg        reset;
-  reg        enable;
-  reg        div_en;
-  reg  [7:0] cdf_in;
-  wire [7:0] g_out;
-  wire       ready_g_out;
+  reg         clk;
+  reg         reset;
+  reg         enable;
+  reg         div_en;
+  reg  [31:0] cdf_in;
+  wire [31:0] g_out;
+  wire        ready_g_out;
   
   divider d1(
   .clk           (clk),
@@ -26,12 +26,12 @@ module divider_tb ;
   clk = 1;
   reset = 1;
   div_en = 0;
-  cdf_in = 8'd1;
+  cdf_in = 32'd1;
   #5 reset = 0;
   #25 div_en = 1;
   #10 div_en = 0;
-  #10 cdf_in = 8'd4;
-  #40 cdf_in = 8'd60;
+  #10 cdf_in = 32'd4;
+  #40 cdf_in = 32'd60;
   end
   
   always 
@@ -45,7 +45,7 @@ module divider_tb ;
   end
   
   initial
-  #800 $finish;
+  #80000 $finish;
   
 endmodule
   
