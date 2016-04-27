@@ -22,23 +22,30 @@ output reg          sc_mem_wt_done
 
 //ALL FSM STATE PARAMETERS
 parameter
-  IDLE_RD        = 4'b0000,
-  FIRST_RD       = 4'b0001,
-  RD_IDLE1       = 4'b0010,
-  RD_IDLE2       = 4'b0011,
-  RD_RDY         = 4'b0100,
-  DIV_EN         = 4'b0101,
-  WAITFORDIV_RD  = 4'b0110,
-  NEXT_RD        = 4'b0111,
-  COMPLETE_RD    = 4'b1000,
-  IDLE_WT        = 4'b1001,
-  WAITFORDIV_WT  = 4'b1010,
-  WRITE          = 4'b1011,
-  COMPLETE_WT    = 4'b1100;
+  IDLE_RD        = 5'b00000,
+  FIRST_RD       = 5'b00001,
+  RD_IDLE1       = 5'b00010,
+  RD_IDLE2       = 5'b00011,
+  RD_RDY         = 5'b00100,
+  DIV_EN         = 5'b00101,
+  WAITFORDIV_RD  = 5'b00110,
+  NEXT_RD        = 5'b00111,
+  COMPLETE_RD    = 5'b01000,
+  IDLE_WT        = 5'b01001,
+  WAITFORDIV_WT  = 5'b01010,
+  WRITE1         = 5'b01011,
+  WT_IDLE1       = 5'b01100,
+  WT_IDLE2       = 5'b01101,
+  WRITE2         = 5'b01110,
+  WT_IDLE3       = 5'b01111,
+  WT_IDLE4       = 5'b10000,
+  COMPLETE_WT    = 5'b10001;
   
   
-reg   [2:0]   rd_state;
-reg   [2:0]   wt_state;
+reg   [4:0]   rd_state;
+reg   [4:0]   wt_state;
+reg           wtdiv_done;
+reg           next_wtdiv_done;
 reg   [2:0]   next_rd_state;
 reg   [2:0]   next_wt_state;
 reg   [15:0]  next_sc_mem_rd_addr1;
@@ -56,7 +63,7 @@ reg   [6:0]   next_wt_line_count;
 wire          all_div_done;
 
 
-assign      all_div_done   =  (div1_done & div2_done & div3_done & div4_done & div5_done & div6_done & div7_done & div8_done);
+assign        all_div_done   =  (div1_done & div2_done & div3_done & div4_done & div5_done & div6_done & div7_done & div8_done);
 
 
 //Moore output updates
@@ -72,6 +79,7 @@ always @(posedge clk) begin
 	sc_mem_wt_done      <= 1'b0;
 	rd_line_count       <= 7'd0;
 	wt_line_count       <= 7'd0;
+	wtdiv_done          <= 1'b0;
   end
   else begin
     rd_state            <= next_rd_state;
@@ -86,6 +94,7 @@ always @(posedge clk) begin
 	sc_mem_wt_done      <= next_sc_mem_wt_done;
 	rd_line_count       <= next_rd_line_count;
 	wt_line_count       <= next_wt_line_count;
+	wtdiv_done          <= next_wtdiv_done;
   end
 end
 
@@ -139,16 +148,16 @@ case(rd_state)
 		next_div_en  = 1'b1;
 	end
 	
-	//State to wait while divider is running 
+	//State to wait while divider is running and complete writes
 	WAITFORDIV_RD:begin
 	
 		next_div_en              = 1'b0;
 		next_sc_mem_rd_data_rdy  = 1'b0;
 		
-		if(all_div_done && (rd_line_count < 7'd62)) begin
+		if(wtdiv_done && (rd_line_count < 7'd62)) begin
 		   next_rd_state  =  NEXT_RD;
 		end
-		else if(all_div_done && (rd_line_count > 7'd62)) begin
+		else if(wtdiv_done && (rd_line_count > 7'd62)) begin
 		   next_rd_state  =  COMPLETE_RD;
 		end
 		else begin
@@ -186,6 +195,7 @@ case(wt_state)
 		next_sc_mem_wt_en    =  1'b0;
 		next_sc_mem_wt_addr  =  16'd128;
 		next_wt_line_count   =  7'd0;
+		next_wtdiv_done      =  1'b0;
 		
 		if(enable) begin
 		   next_wt_state  =   WAITFORDIV_WT;
@@ -198,9 +208,10 @@ case(wt_state)
 	//State to wait while divider is running 
 	WAITFORDIV_WT:begin
 		next_sc_mem_wt_en    =  1'b0;
+		next_wtdiv_done      =  1'b0;
 		
 		if(all_div_done && (wt_line_count < 7'd63)) begin
-		   next_wt_state  =  WRITE;
+		   next_wt_state  =  WRITE1;
 		end
 		else if(all_div_done && (wt_line_count >= 7'd63)) begin
 		   next_wt_state  =  COMPLETE_WT;
@@ -210,12 +221,43 @@ case(wt_state)
 		end
 	end
 	
-	//State to generate write en and wr addr
-	WRITE:begin
+	//State to write first line of div values
+	WRITE1:begin
 		next_sc_mem_wt_addr  =  sc_mem_wt_addr + 1;
 		next_sc_mem_wt_en    =  1'b1;
 		next_wt_line_count   =  wt_line_count + 1;
-		next_wt_state        =  WAITFORDIV_WT;
+		next_wt_state        =  WT_IDLE1;
+	end
+	
+	//Write Idle state 1
+	WT_IDLE1:begin
+		next_sc_mem_wt_en    =  1'b0;
+		next_wt_state  =  WT_IDLE2;
+	end
+	
+	//Write Idle state 2
+	WT_IDLE2:begin
+		next_wt_state  = WRITE2;
+	end
+	
+	//State to write next line of div values
+	WRITE2:begin
+		next_sc_mem_wt_addr  =  sc_mem_wt_addr + 1;
+		next_sc_mem_wt_en    =  1'b1;
+		next_wt_line_count   =  wt_line_count + 1;
+		next_wt_state        =  WT_IDLE3;
+	end
+	
+	//Write Idle state 3
+	WT_IDLE3:begin
+		next_sc_mem_wt_en    =  1'b0;
+		next_wt_state  =  WT_IDLE4;
+	end
+	
+	//Write Idle state 4
+	WT_IDLE4:begin
+		next_wt_state    = WAITFORDIV_WT;
+		next_wtdiv_done  = 1'b1;
 	end
 	
     //All div values written and division is complete
