@@ -35,14 +35,6 @@ reg     [31:0]   next_cdfval_todiv8;
 always @(posedge clk) begin
 
   if(reset) begin
-    cdfval_todiv1   <=   32'd0;
-	cdfval_todiv2   <=   32'd0;
-	cdfval_todiv3   <=   32'd0;
-    cdfval_todiv4   <=   32'd0;
-	cdfval_todiv5   <=   32'd0;
-	cdfval_todiv6   <=   32'd0;
-	cdfval_todiv7   <=   32'd0;
-	cdfval_todiv8   <=   32'd0;
 	state           <=   IDLE;
   end
   else begin
@@ -65,14 +57,6 @@ case(state)
 
     //IDLE state after reset and wait for read rdy
     IDLE:begin
-		next_cdfval_todiv1  =  32'd0;
-		next_cdfval_todiv2  =  32'd0;
-		next_cdfval_todiv3  =  32'd0;
-		next_cdfval_todiv4  =  32'd0;
-		next_cdfval_todiv5  =  32'd0;
-		next_cdfval_todiv6  =  32'd0;
-		next_cdfval_todiv7  =  32'd0;
-		next_cdfval_todiv8  =  32'd0;
 		
 		if(sc_mem_rd_data_rdy) begin
 		next_state   =   CDFLATCH;
@@ -95,6 +79,8 @@ case(state)
 		next_state          =  IDLE;
 	end
 endcase
+end
 
 
-		
+endmodule
+	
