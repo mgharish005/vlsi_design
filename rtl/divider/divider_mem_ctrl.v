@@ -2,11 +2,19 @@ module divider_mem_ctrl(
 input  wire         clk,
 input  wire         reset,
 input  wire         enable,
-input  wire         div_done,
+input  wire         div1_done,
+input  wire         div2_done,
+input  wire         div3_done,
+input  wire         div4_done,
+input  wire         div5_done,
+input  wire         div6_done,
+input  wire         div7_done,
+input  wire         div8_done,
 output reg [15:0]   sc_mem_rd_addr1,
 output reg [15:0]   sc_mem_rd_addr2,
 output reg [15:0]   sc_mem_wt_addr,
 output reg          sc_mem_rd_data_rdy,
+output reg          div_en,
 output reg          sc_mem_wt_en,
 output reg          sc_mem_rd_done,
 output reg          sc_mem_wt_done
@@ -19,13 +27,14 @@ parameter
   RD_IDLE1       = 4'b0010,
   RD_IDLE2       = 4'b0011,
   RD_RDY         = 4'b0100,
-  WAITFORDIV_RD  = 4'b0101,
-  NEXT_RD        = 4'b0110,
-  COMPLETE_RD    = 4'b0111,
-  IDLE_WT        = 4'b1000,
-  WAITFORDIV_WT  = 4'b1001,
-  WRITE          = 4'b1010,
-  COMPLETE_WT    = 4'b1011;
+  DIV_EN         = 4'b0101,
+  WAITFORDIV_RD  = 4'b0110,
+  NEXT_RD        = 4'b0111,
+  COMPLETE_RD    = 4'b1000,
+  IDLE_WT        = 4'b1001,
+  WAITFORDIV_WT  = 4'b1010,
+  WRITE          = 4'b1011,
+  COMPLETE_WT    = 4'b1100;
   
   
 reg   [2:0]   rd_state;
@@ -36,6 +45,7 @@ reg   [15:0]  next_sc_mem_rd_addr1;
 reg   [15:0]  next_sc_mem_rd_addr2;
 reg   [15:0]  next_sc_mem_wt_addr;
 reg           next_sc_mem_rd_data_rdy;
+reg           next_div_en;
 reg           next_sc_mem_wt_en;
 reg           next_sc_mem_rd_done;
 reg           next_sc_mem_wt_done;
@@ -43,6 +53,11 @@ reg   [6:0]   rd_line_count;
 reg   [6:0]   wt_line_count;
 reg   [6:0]   next_rd_line_count;
 reg   [6:0]   next_wt_line_count;
+wire          all_div_done;
+
+
+assign      all_div_done   =  (div1_done & div2_done & div3_done & div4_done & div5_done & div6_done & div7_done & div8_done);
+
 
 //Moore output updates
 always @(posedge clk) begin
@@ -51,6 +66,7 @@ always @(posedge clk) begin
     rd_state            <= IDLE_RD;
 	wt_state            <= IDLE_WT;
 	sc_mem_rd_data_rdy  <= 1'b0;
+	div_en              <= 1'b0;
 	sc_mem_wt_en        <= 1'b0;
 	sc_mem_rd_done      <= 1'b0;
 	sc_mem_wt_done      <= 1'b0;
@@ -64,6 +80,7 @@ always @(posedge clk) begin
 	sc_mem_rd_addr2     <= next_sc_mem_rd_addr2;
 	sc_mem_wt_addr      <= next_sc_mem_wt_addr;
 	sc_mem_rd_data_rdy  <= next_sc_mem_rd_data_rdy;
+	div_en              <= next_div_en;
 	sc_mem_wt_en        <= next_sc_mem_wt_en;
 	sc_mem_rd_done      <= next_sc_mem_rd_done;
 	sc_mem_wt_done      <= next_sc_mem_wt_done;
@@ -81,6 +98,7 @@ case(rd_state)
     IDLE_RD:begin
         next_sc_mem_rd_done       =  1'b0;
 		next_sc_mem_rd_data_rdy   =  1'b0;
+		next_div_en               =  1'b0;
 		next_rd_line_count        =  7'd0;
 		
 		if(enable) begin
@@ -116,16 +134,21 @@ case(rd_state)
 		next_rd_state            =  WAITFORDIV_RD;
 	end
 	
+	//Enable divider after each read ready
+	DIV_EN:begin
+		next_div_en  = 1'b1;
+	end
 	
 	//State to wait while divider is running 
 	WAITFORDIV_RD:begin
 	
+		next_div_en              = 1'b0;
 		next_sc_mem_rd_data_rdy  = 1'b0;
 		
-		if(div_done && (rd_line_count < 7'd62)) begin
+		if(all_div_done && (rd_line_count < 7'd62)) begin
 		   next_rd_state  =  NEXT_RD;
 		end
-		else if(div_done && (rd_line_count > 7'd62)) begin
+		else if(all_div_done && (rd_line_count > 7'd62)) begin
 		   next_rd_state  =  COMPLETE_RD;
 		end
 		else begin
@@ -176,10 +199,10 @@ case(wt_state)
 	WAITFORDIV_WT:begin
 		next_sc_mem_wt_en    =  1'b0;
 		
-		if(div_done && (wt_line_count < 7'd63)) begin
+		if(all_div_done && (wt_line_count < 7'd63)) begin
 		   next_wt_state  =  WRITE;
 		end
-		else if(div_done && (wt_line_count >= 7'd63)) begin
+		else if(all_div_done && (wt_line_count >= 7'd63)) begin
 		   next_wt_state  =  COMPLETE_WT;
 		end
 		else begin
