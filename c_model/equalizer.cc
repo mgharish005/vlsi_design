@@ -202,6 +202,7 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
            min = *(cdf + i);  
     } 
     *(cdf + (l<<1)) = min; 
+    fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
 	 printf("cdf computed successfully \n"); 
     fclose(pFile_cdf_wdata); 
     fclose(pFile_cdf_waddr); 
