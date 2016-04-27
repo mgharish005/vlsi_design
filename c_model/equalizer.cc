@@ -111,46 +111,57 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
 //      printf("File cannot be opened for histogram scoreboarding"); 
 //  }
     uint32_t* h;
+
     uint32_t two_pow_l = (1<<l) -1 ;  
     uint32_t h_index ; 
     h = (uint32_t*)malloc(sizeof(uint32_t)*two_pow_l); 
     if(!h)
 	 	printf("Unable to allocate memory for histogram"); 	
+
+    for (int i = 0 ; i <= two_pow_l; i++)
+            *(h+i) = 0; 
     for(int i = 0; i<n; i++)
 	 {
          printf("\n"); 
     		for(int j = m-1; j>=0; j--)
     		{
+            uint8_t offset_temp; 
+            uint8_t waddr_in_memory; 
+
             h_index = *(*(f+i)+j) & two_pow_l; 
-     //     printf("%x", *(*(f+i)+j));
+            offset_temp  = ((h_index) & 3); 
+
             printf("%x", h_index); 
             if(h_index >= 1<<l)
                 printf("FATAL Issue - due to h_index >= 2^l"); 
-            (*(h + h_index)) ++ ; 
+            *(h + h_index) = *(h + h_index) + 1 ; 
 
-          //printf("h_index = %0d\n", h_index); 
+
+            printf("offset_Temp = %0d\n", offset_temp); 
           //printf("h_index/4 = %0d\n", h_index/4); 
-            fprintf(pFile_hist_waddr, "%d\n", (h_index>>2)); 
+            waddr_in_memory = (h_index>>2); 
+            fprintf(pFile_hist_waddr, "%d\n", waddr_in_memory); 
+
+            
+          //printf("offset = %x\n", offset_temp); 
             //for scoreboarding
-            if(h_index < 4)
-            {
-                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *h, *(h+1), *(h+2), *(h+3));   
+
+            if(offset_temp == 0)
+            { 
+              //fprintf(pFile_hist_wdata,"0 h_index>>2 = %x ", h_index>>2); 
+                fprintf(pFile_hist_wdata, "%032x%032x%032x%032x\n", *(h+(h_index)),*(h+(h_index)+1),*(h+(h_index)+2),*(h+(h_index)+3));  
             } 
-            else if (h_index % 4)
+            else if(offset_temp == 1)
             {
-                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index),*(h+h_index+1),*(h+h_index+2),*(h+h_index+3));  
-            } 
-            else if ((h_index-1) % 4)
-            {
-                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-1),*(h+h_index),*(h+h_index+1),*(h+h_index+2));  
+                fprintf(pFile_hist_wdata, "%032x%032x%032x%032x\n", *(h+(h_index)-1),*(h+(h_index)),*(h+(h_index)+1),*(h+(h_index)+2));  
             }
-            else if ((h_index-2) % 4)
+            else if(offset_temp == 2)
             {
-                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-2),*(h+h_index-1),*(h+h_index),*(h+h_index+1));  
+                fprintf(pFile_hist_wdata, "%032x%032x%032x%032x\n", *(h+h_index-2),*(h+h_index-1),*(h+h_index),*(h+h_index+1));  
             }
-            else if ((h_index-3) % 4)
+            else if(offset_temp == 3)
             {
-                fprintf(pFile_hist_wdata, "%0x%0x%0x%0x\n", *(h+h_index-3),*(h+h_index-2),*(h+h_index-1),*(h+h_index));  
+                fprintf(pFile_hist_wdata, "%032x%032x%032x%032x\n", *(h+(h_index-3)),*(h+(h_index-2)),*(h+(h_index-1)),*(h+h_index));  
             }
     		}
     }

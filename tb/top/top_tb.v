@@ -20,8 +20,7 @@ module top_tb;
     integer waddr_file; 
     integer scan_file1 ,scan_file2; 
     integer c_model_waddr; 
-    integer c_model_wdata[0:3]; 
-    reg[31:0] c_model_wdata_all; 
+    reg [31:0] c_model_wdata[0:3]; 
 
     initial
     begin
@@ -32,7 +31,10 @@ module top_tb;
         $readmemh("input_image.txt", top_u0.input_memory_u0.Register);  
         clock = 1; 
         reset = 1; 
-        c_model_wdata_all = 0; 
+        c_model_wdata[0] = 32'b0; 
+        c_model_wdata[1] = 32'b0; 
+        c_model_wdata[2] = 32'b0; 
+        c_model_wdata[3] = 32'b0; 
 
         input_mem_depth = 1<<16; 
         scratch_mem_depth = 1<<16; 
@@ -43,7 +45,7 @@ module top_tb;
         #20 new_image_pulse = 0; 
 
 
-        #8500 $finish; 
+        #16500 $finish; 
     end
     
     top top_u0
@@ -64,51 +66,43 @@ module top_tb;
     #2; 
     //read from file and compare the write address and wdata
     scan_file1 = $fscanf(waddr_file, "%d\n", c_model_waddr) ;  
-    scan_file2 = $fscanf(wdata_file, "%x\n", c_model_wdata_all) ;  
+    scan_file2 = $fscanf(wdata_file, "%032x%032x%032x%032x\n", c_model_wdata[3], c_model_wdata[2], c_model_wdata[1], c_model_wdata[0]) ;  
 
-
-    c_model_wdata[0] = c_model_wdata_all & 32'h000f; 
-    c_model_wdata[1] = (c_model_wdata_all & 32'h00f0) >> 4 ; 
-    c_model_wdata[2] = (c_model_wdata_all & 32'h0f00) >> 8; 
-    c_model_wdata[3] = (c_model_wdata_all & 32'hf000) >> 12; 
-
-
-  //$display("[checker] wdata from pli = %x", c_model_wdata_all); 
-  //$display("[checker] wdata from pli = %x", c_model_wdata[3]); 
-  //$display("[checker] wdata from pli = %x", c_model_wdata[2]); 
-  //$display("[checker] wdata from pli = %x", c_model_wdata[1]); 
-  //$display("[checker] wdata from pli = %x", c_model_wdata[0]); 
+ // $display("[checker] wdata from pli = %x", c_model_wdata[3]); 
+ // $display("[checker] wdata from pli = %x", c_model_wdata[2]); 
+ // $display("[checker] wdata from pli = %x", c_model_wdata[1]); 
+ // $display("[checker] wdata from pli = %x", c_model_wdata[0]); 
 
 
     if(!$feof(waddr_file)) 
     begin
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.write_address != c_model_waddr)
                 $display("Mismatch hist_scratch_waddr @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.write_address, c_model_waddr); 
-  //    else
-  //            $display("Match hist_scratch_waddr @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.write_address, c_model_waddr); 
+//      else
+//              $display("Match hist_scratch_waddr @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.write_address, c_model_waddr); 
     end
 
     if(!$feof(wdata_file)) 
     begin
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96] != c_model_wdata[3])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
-  //    else
-  //            $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
-  //    
+        else
+                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
+        
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64] != c_model_wdata[2])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
-///     else
-///             $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
+        else
+                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
 
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32] != c_model_wdata[1])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
-//      else
-//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
+        else
+                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
 
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0] != c_model_wdata[0])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
-//      else
-//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
+        else
+                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
     end
 
   end
