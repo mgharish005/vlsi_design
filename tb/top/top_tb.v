@@ -86,23 +86,23 @@ module top_tb;
     begin
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96] != c_model_wdata[3])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
-        else
-                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
+//      else
+//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[127:96], c_model_wdata[3]); 
         
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64] != c_model_wdata[2])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
-        else
-                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
+//      else
+//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[95:64], c_model_wdata[2]); 
 
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32] != c_model_wdata[1])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
-        else
-                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
+//      else
+//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[63:32], c_model_wdata[1]); 
 
         if(top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0] != c_model_wdata[0])
                 $display("Mismatch hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
-        else
-                $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
+//      else
+//              $display("Match hist_scratch_wdata @ %0t ckt = %x | pli = %x", $stime, top_u0.top_without_mem_u0.histogram_equalizer_core_u0.histogram_data_path_u0.wdata[31:0], c_model_wdata[0]); 
     end
 
   end
