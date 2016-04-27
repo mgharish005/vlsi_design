@@ -16,6 +16,8 @@ typedef struct uint128_type
 FILE *pFile; 
 FILE *pFile_hist_waddr; 
 FILE *pFile_hist_wdata; 
+FILE *pFile_cdf_waddr; 
+FILE *pFile_cdf_wdata; 
 
 void print_bits(uint32_t num)
 {
@@ -118,7 +120,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
     if(!h)
 	 	printf("Unable to allocate memory for histogram"); 	
 
-    for (int i = 0 ; i <= two_pow_l; i++)
+    for (int i = 0 ; i < two_pow_l; i++)
             *(h+i) = 0; 
     for(int i = 0; i<n; i++)
 	 {
@@ -137,7 +139,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
             *(h + h_index) = *(h + h_index) + 1 ; 
 
 
-            printf("offset_Temp = %0d\n", offset_temp); 
+          //printf("offset_Temp = %0d\n", offset_temp); 
           //printf("h_index/4 = %0d\n", h_index/4); 
             waddr_in_memory = (h_index>>2); 
             fprintf(pFile_hist_waddr, "%d\n", waddr_in_memory); 
@@ -165,7 +167,7 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
             }
     		}
     }
-	 printf("histogram loaded successfully \n"); 
+	 printf("\nhistogram loaded successfully \n"); 
     fclose(pFile_hist_wdata); 
     fclose(pFile_hist_waddr); 
     return h;  
@@ -173,23 +175,36 @@ uint32_t* draw_histogram(uint8_t** f, uint32_t l, uint32_t m, uint32_t n)
 
 uint32_t* compute_cdf(uint32_t* h, uint32_t l)
 {
+	 pFile_cdf_wdata = fopen("cdf_scratch_wdata.txt", "w"); 
+	 pFile_cdf_waddr = fopen("cdf_scratch_waddr.txt", "w"); 
+
     uint32_t* cdf;
     uint32_t min = l<<1;
+    uint8_t waddr_in_memory; 
     
     uint32_t two_pow_l = (1<<l) -1 ;  
     cdf = (uint32_t*)malloc(sizeof(uint32_t)*(two_pow_l+1)); 
+
     if(!cdf)
 	 	printf("Unable to allocate memory for histogram"); 	
+
     for(int i = 0; i < two_pow_l; i++)
     { 
         for(int j = 0; j <= i ; j++)
                 *(cdf + i) = *(cdf+i) + *(h+j);  
+       
+        waddr_in_memory = i / 4;  
+        fprintf(pFile_cdf_waddr, "%d\n", waddr_in_memory); 
+        fprintf(pFile_cdf_wdata, "%d\n", *(cdf + i)); 
+
         //find min
         if(*(cdf+i) < min)
            min = *(cdf + i);  
     } 
     *(cdf + (l<<1)) = min; 
 	 printf("cdf computed successfully \n"); 
+    fclose(pFile_cdf_wdata); 
+    fclose(pFile_cdf_waddr); 
     return cdf; 
 }
 
@@ -233,7 +248,7 @@ int main(int argc, char *argv[])
 
 
     
-	 uint32_t l = 16;
+	 uint32_t l = 8;
 	 uint32_t two_pow = l<<1;
 	 uint8_t **f = NULL; 
 	 uint8_t **g = NULL; 
