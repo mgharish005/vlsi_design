@@ -6,6 +6,7 @@ input  wire         clk,
 input  wire         reset,
 input  wire         enable,
 input  wire         div_en,
+input  wire [31:0]  cdf_min,
 input  wire [31:0]  cdf_in,
 output wire [31:0]  g_out,
 output wire         ready_g_out
@@ -17,12 +18,11 @@ wire  [63:0] g_divider_In;
 reg   [63:0] g_dividend_Q;
 reg   [63:0] g_divider_Q;
 
-parameter CDFMIN = 1;
 parameter SIZE = 307200;
 parameter LPOW = 8;
 
-assign     g_dividend_In[63:0]    =    (((cdf_in - CDFMIN)<<LPOW) - (cdf_in - CDFMIN));
-assign     g_divider_In[63:0]     =    {32'd0, (SIZE - CDFMIN)};
+assign     g_dividend_In[63:0]    =    (((cdf_in - cdf_min)<<LPOW) - (cdf_in - cdf_min));
+assign     g_divider_In[63:0]     =    {32'd0, (SIZE - cdf_min)};
 
 
 always @(posedge clk)
