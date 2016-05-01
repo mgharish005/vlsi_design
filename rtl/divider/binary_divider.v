@@ -20,8 +20,8 @@ reg   [63:0]  rem;
 reg   [63:0]  next_rem;
 reg   [127:0] prod;
 reg   [127:0] next_prod;
-reg   [64:0]  term;
-reg   [64:0]  next_term;
+reg   [63:0]  term;
+reg   [63:0]  next_term;
 reg   [31:0]  next_q;
 reg           next_done;
 
@@ -56,7 +56,7 @@ case(state)
     next_q      = 32'd0;
 	next_rem    = g_dividend_Q;
 	next_prod   = g_divider_Q << 63;
-	next_term   = 65'h10000000000000000;
+	next_term   = 64'h8000000000000000;
 	next_done   = 1'b0;
 	
 	if(div_en) begin
@@ -80,6 +80,7 @@ case(state)
 	end
     else begin
       next_state = COMPLETE;
+	  next_q     = quotient + term;
     end	  
    end
 
