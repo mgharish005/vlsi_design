@@ -8,15 +8,15 @@ input  wire         reset,
 input  wire         enable,
 input  wire         divider_en,
 input  wire [31:0]  cdf_min,
-input  wire [127:0] sc_mem_rd_data1,
-input  wire [127:0] sc_mem_rd_data2,
-output wire [127:0] sc_mem_wt_data,
-output wire [15:0]  sc_mem_rd_addr1,
-output wire [15:0]  sc_mem_rd_addr2,
-output wire [15:0]  sc_mem_wt_addr,
-output wire         sc_mem_wt_en,
-output wire         sc_mem_rd_done,
-output wire         sc_mem_wt_done
+input  wire [127:0] div_sc_mem_rd_data1,
+input  wire [127:0] div_sc_mem_rd_data2,
+output wire [127:0] div_sc_mem_wt_data,
+output wire [15:0]  div_sc_mem_rd_addr1,
+output wire [15:0]  div_sc_mem_rd_addr2,
+output wire [15:0]  div_sc_mem_wt_addr,
+output wire         div_sc_mem_wt_en,
+output wire         div_sc_mem_rd_done,
+output wire         div_sc_mem_wt_done
 );
 
 //Wires for modules
@@ -60,14 +60,14 @@ divider_mem_ctrl divider_mem_ctrl (
 	.div6_done                 (div6_done),
 	.div7_done                 (div7_done),
 	.div8_done                 (div8_done),
-	.sc_mem_rd_addr1           (sc_mem_rd_addr1),
-	.sc_mem_rd_addr2           (sc_mem_rd_addr2),
-	.sc_mem_wt_addr            (sc_mem_wt_addr),
+	.sc_mem_rd_addr1           (div_sc_mem_rd_addr1),
+	.sc_mem_rd_addr2           (div_sc_mem_rd_addr2),
+	.sc_mem_wt_addr            (div_sc_mem_wt_addr),
 	.sc_mem_rd_data_rdy        (sc_mem_rd_data_rdy),
 	.div_en                    (divider_en),
-	.sc_mem_wt_en              (sc_mem_wt_en),
-	.sc_mem_rd_done            (sc_mem_rd_done),
-	.sc_mem_wt_done            (sc_mem_wt_done)
+	.sc_mem_wt_en              (div_sc_mem_wt_en),
+	.sc_mem_rd_done            (div_sc_mem_rd_done),
+	.sc_mem_wt_done            (div_sc_mem_wt_done)
 	);
 
 //DIVIDER DATAPATH LOGIC
@@ -76,8 +76,8 @@ divider_mem_datapath divider_mem_datapath (
 	.reset                     (reset),
 	.enable                    (enable),
 	.sc_mem_rd_data_rdy        (sc_mem_rd_data_rdy),
-	.sc_mem_rd_data1           (sc_mem_rd_data1),
-	.sc_mem_rd_data2           (sc_mem_rd_data2),
+	.sc_mem_rd_data1           (div_sc_mem_rd_data1),
+	.sc_mem_rd_data2           (div_sc_mem_rd_data2),
 	.div1_done                 (div1_done),
 	.div2_done                 (div2_done),
 	.div3_done                 (div3_done),
@@ -102,7 +102,7 @@ divider_mem_datapath divider_mem_datapath (
 	.cdfval_todiv6             (cdfval_todiv6),
 	.cdfval_todiv7             (cdfval_todiv7),
 	.cdfval_todiv8             (cdfval_todiv8),
-	.sc_mem_wt_data            (sc_mem_wt_data)
+	.sc_mem_wt_data            (div_sc_mem_wt_data)
 	);
 	
 //DIVIDER CORE 1
