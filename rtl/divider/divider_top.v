@@ -6,7 +6,6 @@ module divider_top(
 input  wire         clk,
 input  wire         reset,
 input  wire         enable,
-input  wire         divider_en,
 input  wire [31:0]  cdf_min,
 input  wire [127:0] div_sc_mem_rd_data1,
 input  wire [127:0] div_sc_mem_rd_data2,
@@ -28,6 +27,10 @@ wire                div5_done;
 wire                div6_done;
 wire                div7_done;
 wire                div8_done;
+wire                divider_en;
+wire                divider_en_D1;
+wire                divider_en_D2;
+wire                divider_en_D3;
 wire                sc_mem_rd_data_rdy;
 wire     [31:0]     div1_value;
 wire     [31:0]     div2_value;
@@ -65,6 +68,9 @@ divider_mem_ctrl divider_mem_ctrl (
 	.sc_mem_wt_addr            (div_sc_mem_wt_addr),
 	.sc_mem_rd_data_rdy        (sc_mem_rd_data_rdy),
 	.div_en                    (divider_en),
+	.div_en_D1                 (divider_en_D1),
+	.div_en_D2                 (divider_en_D2),
+	.div_en_D3                 (divider_en_D3),
 	.sc_mem_wt_en              (div_sc_mem_wt_en),
 	.sc_mem_rd_done            (div_sc_mem_rd_done),
 	.sc_mem_wt_done            (div_sc_mem_wt_done)
@@ -110,7 +116,7 @@ divider  divider1(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv1),
 	.g_out                     (div1_value),
@@ -122,7 +128,7 @@ divider  divider2(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv2),
 	.g_out                     (div2_value),
@@ -134,7 +140,7 @@ divider  divider3(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv3),
 	.g_out                     (div3_value),
@@ -146,7 +152,7 @@ divider  divider4(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv4),
 	.g_out                     (div4_value),
@@ -158,7 +164,7 @@ divider  divider5(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv5),
 	.g_out                     (div5_value),
@@ -170,7 +176,7 @@ divider  divider6(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv6),
 	.g_out                     (div6_value),
@@ -182,7 +188,7 @@ divider  divider7(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv7),
 	.g_out                     (div7_value),
@@ -194,7 +200,7 @@ divider  divider8(
 	.clk                       (clk),
 	.reset                     (reset),
 	.enable                    (enable),
-	.div_en                    (divider_en),
+	.div_en                    (divider_en_D3),
 	.cdf_min                   (cdf_min),
 	.cdf_in                    (cdfval_todiv8),
 	.g_out                     (div8_value),

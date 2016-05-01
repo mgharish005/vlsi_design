@@ -15,6 +15,9 @@ output reg [15:0]   sc_mem_rd_addr2,
 output reg [15:0]   sc_mem_wt_addr,
 output reg          sc_mem_rd_data_rdy,
 output reg          div_en,
+output reg          div_en_D1,
+output reg          div_en_D2,
+output reg          div_en_D3,
 output reg          sc_mem_wt_en,
 output reg          sc_mem_rd_done,
 output reg          sc_mem_wt_done
@@ -46,8 +49,8 @@ reg   [4:0]   rd_state;
 reg   [4:0]   wt_state;
 reg           wtdiv_done;
 reg           next_wtdiv_done;
-reg   [2:0]   next_rd_state;
-reg   [2:0]   next_wt_state;
+reg   [4:0]   next_rd_state;
+reg   [4:0]   next_wt_state;
 reg   [15:0]  next_sc_mem_rd_addr1;
 reg   [15:0]  next_sc_mem_rd_addr2;
 reg   [15:0]  next_sc_mem_wt_addr;
@@ -98,6 +101,13 @@ always @(posedge clk) begin
   end
 end
 
+//Staging Delay for Divider Enable
+always @(posedge clk) begin
+	div_en_D1   <=   div_en;
+	div_en_D2   <=   div_en_D1;
+	div_en_D3   <=   div_en_D2;
+end
+
 //FSM LOGIC TO READ FROM SCRATCH MEM
 always @(*) begin
 
@@ -140,12 +150,13 @@ case(rd_state)
 	//going to wait for div
 	RD_RDY:begin
 		next_sc_mem_rd_data_rdy  =  1'b1;
-		next_rd_state            =  WAITFORDIV_RD;
+		next_rd_state            =  DIV_EN;
 	end
 	
 	//Enable divider after each read ready
 	DIV_EN:begin
-		next_div_en  = 1'b1;
+		next_div_en    =  1'b1;
+		next_rd_state  =  WAITFORDIV_RD;
 	end
 	
 	//State to wait while divider is running and complete writes

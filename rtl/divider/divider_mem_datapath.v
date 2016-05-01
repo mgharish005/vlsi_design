@@ -57,13 +57,28 @@ reg     [31:0]   next_cdfval_todiv6;
 reg     [31:0]   next_cdfval_todiv7;
 reg     [31:0]   next_cdfval_todiv8;
 reg     [127:0]  next_sc_mem_wt_data;
+reg     [127:0]  wt_data1;
+reg     [127:0]  wt_data2;
+reg     [127:0]  wt_data2_D1;
+reg     [127:0]  wt_data2_D2;
+reg     [127:0]  wt_data2_D3;
 wire             all_div_done;
-wire    [127:0]  wt_data1;
-wire    [127:0]  wt_data2;
+
 
 assign   all_div_done     =  (div1_done & div2_done & div3_done & div4_done & div5_done & div6_done & div7_done & div8_done);
-assign   wt_data1[127:0]  =  {div4_value, div3_value, div2_value, div1_value};
-assign   wt_data2[127:0]  =  {div8_value, div7_value, div6_value, div5_value};
+
+//Update Write data using Reg
+always @ (posedge clk) begin
+	wt_data1[127:0]   <=   {div4_value, div3_value, div2_value, div1_value};
+	wt_data2[127:0]   <=   {div8_value, div7_value, div6_value, div5_value};
+end
+
+//Staging delay for Wt Data2
+always @ (posedge clk) begin
+	wt_data2_D1     <=   wt_data2;
+	wt_data2_D2     <=   wt_data2_D1;
+	wt_data2_D3     <=   wt_data2_D2;
+end
 
 //Moore output updates
 always @(posedge clk) begin
@@ -157,7 +172,7 @@ case(wt_state)
 	
 	//Write for second line into scratch mem
 	WRITE2:begin
-		next_sc_mem_wt_data  =  wt_data2;
+		next_sc_mem_wt_data  =  wt_data2_D3;
 		next_wt_state        =  WT_IDLE3;
 	end
 	
