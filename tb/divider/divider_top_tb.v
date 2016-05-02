@@ -43,6 +43,8 @@ module divider_top_tb;
   enable = 0;
   #15 reset = 0;
   #10 enable = 1;
+  #300   div_sc_mem_rd_data2 = 128'h00000961000009610000096100000961;
+  div_sc_mem_rd_data1 = 128'h000012C1000012C1000012C1000012C1;
   
   end
 

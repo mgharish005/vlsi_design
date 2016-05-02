@@ -204,7 +204,7 @@ case(wt_state)
     IDLE_WT:begin
         next_sc_mem_wt_done  =  1'b0;
 		next_sc_mem_wt_en    =  1'b0;
-		next_sc_mem_wt_addr  =  16'd128;
+		next_sc_mem_wt_addr  =  16'd127;
 		next_wt_line_count   =  7'd0;
 		next_wtdiv_done      =  1'b0;
 		
