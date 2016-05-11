@@ -20,22 +20,24 @@ output reg           output_wt_done
 
 //ALL FSM STATE PARAMETRS
 parameter
-  IDLE          = 4'b0000,
-  FIRST_INP_RD  = 4'b0001,
-  IDLE_RD1      = 4'b0010,
-  IDLE_RD2      = 4'b0011,
-  NEXT_INP_RD   = 4'b0100,
-  SCMEM_RD      = 4'b0101,
-  IDLE_RD3      = 4'b0110,
-  IDLE_RD4      = 4'b0111,
-  OP_MAP        = 4'b1000,
-  WTDATA_1      = 4'b1001,
-  IDLE_WT1      = 4'b1010,
-  IDLE_WT2      = 4'b1011,
-  WTDATA_2      = 4'b1100,
-  IDLE_WT3      = 4'b1101,
-  IDLE_WT4      = 4'b1110,
-  COMPLETE      = 4'b1111;
+  IDLE             = 5'b00000,
+  FIRST_INP_RD     = 5'b00001,
+  IDLE_RD1         = 5'b00010,
+  IDLE_RD2         = 5'b00011,
+  INP_DATA_ROTATE  = 5'b00100,
+  NEXT_INP_RD      = 5'b00101,
+  SCMEM_RD         = 5'b00110,
+  IDLE_RD3         = 5'b00111,
+  IDLE_RD4         = 5'b01000,
+  PRE_OP_MAP       = 5'b01001,
+  OP_MAP           = 5'b01010,
+  WTDATA_1         = 5'b01011,
+  IDLE_WT1         = 5'b01100,
+  IDLE_WT2         = 5'b01101,
+  WTDATA_2         = 5'b01110,
+  IDLE_WT3         = 5'b01111,
+  IDLE_WT4         = 5'b10000,
+  COMPLETE         = 5'b10001;
   
   
 reg   [3:0]   state;
@@ -43,8 +45,12 @@ reg   [6:0]   inp_rd_line_count;
 reg   [6:0]   out_wt_line_count;
 reg   [3:0]   pixel_map_count;
 reg   [7:0]   index_range_select;
-reg   [1:0]   offset_range_select0;
-reg   [1:0]   offset_range_select1;
+reg   [127:0] sc_mem_index_val1;
+reg   [127:0] sc_mem_index_val2;
+reg   [7:0]   offset_range_select0;
+reg   [7:0]   offset_range_select1;
+reg   [127:0] pre_map_data1;
+reg   [127:0] pre_map_data2;
 reg   [127:0] out_wt_data1;
 reg   [127:0] out_wt_data2;
 
@@ -57,8 +63,14 @@ reg   [15:0]  next_inp_mem_rd_addr2;
 reg   [15:0]  next_sc_mem_rd_addr1;
 reg   [15:0]  next_sc_mem_rd_addr2;
 reg   [7:0]   next_index_range_select;
-reg   [1:0]   next_offset_range_select0;
-reg   [1:0]   next_offset_range_select1;
+reg   [127:0] next_sc_mem_index_val1;
+reg   [127:0] next_sc_mem_index_val2;
+reg   [7:0]   next_offset_range_select0;
+reg   [7:0]   next_offset_range_select1;
+reg   [127:0] next_pre_map_data1;
+reg   [127:0] next_pre_map_data2;
+reg   [127:0] next_out_wt_data1;
+reg   [127:0] next_out_wt_data2;
 reg   [15:0]  next_out_mem_wt_addr;
 reg           next_out_mem_wt_en;
 reg   [127:0] next_out_mem_wt_data;
@@ -73,8 +85,14 @@ always @(posedge clk) begin
 	out_wt_line_count      <=  7'd0;
 	pixel_map_count        <=  7'd0;
 	index_range_select     <=  7'd0;
-	offset_range_select0   <=  2'd0;
-	offset_range_select1   <=  2'd0;
+	sc_mem_index_val1      <=  128'd0;
+	sc_mem_index_val2      <=  128'd0;
+	offset_range_select0   <=  8'd0;
+	offset_range_select1   <=  8'd0;
+	pre_map_data1          <=  128'd0;
+	pre_map_data2          <=  128'd0;
+	out_wt_data1           <=  128'd0;
+	out_wt_data2           <=  128'd0;
 	out_mem_wt_en          <=  1'b0;
 	out_mem_wt_data        <=  128'd0;
 	output_wt_done         <=  1'b0;
@@ -89,8 +107,14 @@ always @(posedge clk) begin
 	sc_mem_rd_addr1        <=  next_sc_mem_rd_addr1;
 	sc_mem_rd_addr2        <=  next_sc_mem_rd_addr2;
 	index_range_select     <=  next_index_range_select;
+	sc_mem_index_val1      <=  next_sc_mem_index_val1;
+	sc_mem_index_val2      <=  next_sc_mem_index_val2;
 	offset_range_select0   <=  next_offset_range_select0;
 	offset_range_select1   <=  next_offset_range_select1;
+	pre_map_data1          <=  next_pre_map_data1;
+	pre_map_data2          <=  next_pre_map_data2;
+	out_wt_data1           <=  next_out_wt_data1;
+	out_wt_data2           <=  next_out_wt_data2;
 	out_mem_wt_addr        <=  next_out_mem_wt_addr;
 	out_mem_wt_en          <=  next_out_mem_wt_en;
 	out_mem_wt_data        <=  next_out_mem_wt_data;
@@ -109,8 +133,14 @@ case(state)
 		next_out_wt_line_count    <=  7'd0;
 		next_pixel_map_count      <=  7'd0;
 		next_index_range_select   <=  8'd0;
-		next_offset_range_select0 <=  2'd0;
-		next_offset_range_select1 <=  2'd0;
+		next_sc_mem_index_val1    <=  128'd0;
+		next_sc_mem_index_val2    <=  128'd0;
+		next_offset_range_select0 <=  8'd0;
+		next_offset_range_select1 <=  8'd0;
+		next_pre_map_data1        <=  128'd0;
+		next_pre_map_data2		  <=  128'd0;
+		next_out_wt_data1         <=  128'd0;
+		next_out_wt_data2         <=  128'd0;
 		next_out_mem_wt_addr      <=  16'd0;
 		next_out_mem_wt_en        <=  1'b0;
 		next_out_mem_wt_data      <=  128'd0;
@@ -139,42 +169,59 @@ case(state)
 	
 	//Idle state 2 for input mem rd data
 	IDLE_RD2:begin
-		next_state   <=  SCMEM_RD;
+		next_state   <=  INP_DATA_ROTATE;
+	end
+	
+	//State to perform rotation
+	INP_DATA_ROTATE:begin
+		next_sc_mem_index_val1  <=  (inp_mem_rd_data1 >> index_range_select);
+		next_sc_mem_index_val2  <=  (inp_mem_rd_data2 >> index_range_select);
+	    next_state              <=  SCMEM_RD;
 	end
 	
 	//State to set scratch read address
 	//based on pixel value from input mem
 	SCMEM_RD:begin
-		next_sc_mem_rd_addr1   	  <=  {10'b0000000000, inp_mem_rd_data1[index_range_select+7 : index_range_select+2]};
-		next_sc_mem_rd_addr2 	  <=  {10'b0000000000, inp_mem_rd_data2[index_range_select+7 : index_range_select+2]};
-		next_offset_range_select0 <=  inp_mem_rd_data1[index_range_select+1 : index_range_select];
-		next_offset_range_select1 <=  inp_mem_rd_data2[index_range_select+1 : index_range_select];
+		next_sc_mem_rd_addr1   	  <=  {10'b0000000000, sc_mem_index_val1[7:2]};
+		next_sc_mem_rd_addr2 	  <=  {10'b0000000000, sc_mem_index_val2[7:2]};
+		next_offset_range_select0 <=  {6'b000000, sc_mem_index_val1[1:0]};
+		next_offset_range_select1 <=  {6'b000000, sc_mem_index_val2[1:0]};
 		next_pixel_map_count      <=  pixel_map_count + 7'd2;
 		next_state                <=  IDLE_RD3;
 	end
 	
 	//Idle state 3 for sc mem rd data
 	IDLE_RD3:begin
-		next_state    <=   IDLE_RD4;
+		next_offset_range_select0   <=   (offset_range_select0<<5);
+		next_offset_range_select1   <=   (offset_range_select1<<5);
+		next_state                  <=   IDLE_RD4;
 	end
 	
 	//Idle state 4 for sc mem rd data
 	IDLE_RD4:begin
-		next_state    <=   MAPPING;
+		next_state    <=   PRE_OP_MAP;
+	end
+	
+	//State to perform rotations on
+	//data read from scratch memory
+	PRE_OP_MAP:begin
+		next_pre_map_data1        <=     ((sc_mem_rd_data1>>offset_range_select0) & 128'd255);
+		next_pre_map_data2        <=     ((sc_mem_rd_data2>>offset_range_select1) & 128'd255);
+		next_state                <=     OP_MAP;
 	end
 	
 	//State to map and form the output
 	//wire data
 	OP_MAP:begin
-		out_wt_data1[index_range_select+7 : index_range_select]   <=  sc_mem_rd_data1[(offset_range_select0<<5)+7 :(offset_range_select0<<5)];
-		out_wt_data2[index_range_select+7 : index_range_select]   <=  sc_mem_rd_data2[(offset_range_select1<<5)+7 :(offset_range_select1<<5)];
+		next_out_wt_data1           <=  (out_wt_data1 + (pre_map_data1<<index_range_select));
+		next_out_wt_data2           <=  (out_wt_data2 + (pre_map_data2<<index_range_select));
 		next_index_range_select     <=  index_range_select + 8'd8;
 		
 		if(pixel_map_count >= 7'd64) begin
 			next_state    <=  WTDATA_1;
 		end
 		else begin
-			next_state    <=  SCMEM_RD;
+			next_state    <=  INP_DATA_ROTATE;
 		end
 		
 	end
