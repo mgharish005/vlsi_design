@@ -18,6 +18,10 @@ FILE *pFile_hist_waddr;
 FILE *pFile_hist_wdata; 
 FILE *pFile_cdf_waddr; 
 FILE *pFile_cdf_wdata; 
+FILE *pFile_divider_scratch_wdata; 
+FILE *pFile_divider_scratch_waddr; 
+FILE *pFile_scratchmem_dump_for_divider; 
+FILE *pFile_scratchmem_dump_for_cdf; 
 
 void print_bits(uint32_t num)
 {
@@ -177,6 +181,8 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
 {
 	 pFile_cdf_wdata = fopen("cdf_scratch_wdata.txt", "w"); 
 	 pFile_cdf_waddr = fopen("cdf_scratch_waddr.txt", "w"); 
+    pFile_scratchmem_dump_for_cdf = fopen("scratchmem_dump_for_cdf.txt", "w"); 
+    pFile_scratchmem_dump_for_divider = fopen("scratchmem_dump_for_divider.txt", "w"); 
 
     uint32_t* cdf;
     uint32_t min = l<<1;
@@ -188,46 +194,103 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     if(!cdf)
 	 	printf("Unable to allocate memory for histogram"); 	
 
+
     for(int i = 0; i < two_pow_l; i++)
     { 
         for(int j = 0; j <= i ; j++)
                 *(cdf + i) = *(cdf+i) + *(h+j);  
        
         waddr_in_memory = i / 4;  
-        fprintf(pFile_cdf_waddr, "%d\n", waddr_in_memory); 
-        fprintf(pFile_cdf_wdata, "%d\n", *(cdf + i)); 
+        fprintf(pFile_cdf_waddr, "%032x\n", waddr_in_memory); 
+        fprintf(pFile_cdf_wdata, "%032xd\n", *(cdf + i)); 
 
         //find min
-        if(*(cdf+i) < min)
-           min = *(cdf + i);  
+            if(*(cdf+i) < min && *(cdf+i) > 0)
+                min = *(cdf + i);  
     } 
     *(cdf + (l<<1)) = min; 
     fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
+    
+    for(int i = 0; i< two_pow_l/4; i = i+ 4)
+    {
+        fprintf(pFile_scratchmem_dump_for_cdf, "%032x%032x%032x%032x\n", *(h +i), *(h+i+1), *(h+i+2), *(h+i+3) ); 
+        fprintf(pFile_scratchmem_dump_for_divider, "%032x%032x%032x%032x\n", *(h +i), *(h+i+1), *(h+i+2), *(h+i+3) ); 
+    }
+    for(int i = 0; i< two_pow_l/4; i = i+ 4)
+    {
+        fprintf(pFile_scratchmem_dump_for_divider, "%032x%032x%032x%032x\n", *(cdf +i), *(cdf+i+1), *(cdf+i+2), *(cdf+i+3) ); 
+    }
 	 printf("cdf computed successfully \n"); 
     fclose(pFile_cdf_wdata); 
     fclose(pFile_cdf_waddr); 
+    fclose(pFile_scratchmem_dump_for_divider); 
+    fclose(pFile_scratchmem_dump_for_cdf); 
     return cdf; 
 }
 
 uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint32_t n, uint32_t l)
 {
+	 pFile_divider_scratch_wdata = fopen("divider_scratch_wdata.txt", "w"); 
+	 pFile_divider_scratch_waddr = fopen("divider_scratch_waddr.txt", "w"); 
+
     uint32_t cdf_min;  
     uint8_t input_image_local;  
     uint8_t** output_image; 
+    uint8_t* cdf_order_output_image; 
     uint32_t two_pow = l <<1;
     cdf_min = *(cdf + two_pow); 
     
     uint32_t factor = 0; 
-    factor = (l-1)/((n-m)-cdf_min); 
+    factor = (two_pow-1)/((n*m)-cdf_min); 
 
-	 output_image = (uint8_t**)malloc(sizeof(uint8_t*)*m);  	
+	 output_image = (uint8_t**)malloc(sizeof(uint8_t*)*n);  	
+    cdf_order_output_image  = (uint8_t*)malloc(sizeof(uint8_t)*two_pow); 
+
+    printf("l-1 = %d", l-1); 
+    printf("cdf_min = %d", cdf_min); 
+    printf("n*m -cdf_min = %d", n*m-cdf_min); 
+    printf("factor = %d", factor); 
 	 if(!output_image)
-	 	printf("Unable to allocate memory for output image"); 	
+	 	printf("Unable to allocate memory for output image"); 
 
-    for(int i = 0; i<m; i++)
+	 if(!cdf_order_output_image)
+	 	printf("Unable to allocate memory for cdf_order_output_image image"); 
+
+    //for scoreboarding------------------------------------------------------------------------------
+
+    for(int i=0; i< two_pow; i++)
+        *(cdf_order_output_image + i) = 0; 
+
+    for(int i=0; i< two_pow; i++)
+    {
+        *(cdf_order_output_image + i) = (*(cdf+i) - cdf_min)*factor;   
+        if(i % 4 == 0)
+        { 
+            fprintf(pFile_divider_scratch_wdata, "%032x%032x%032x%032x\n", *(cdf_order_output_image+(i)),*(cdf_order_output_image+i+1),*(cdf_order_output_image+i+2),*(cdf_order_output_image+i+3));  
+        } 
+        else if(i % 4 == 1)
+        {
+            fprintf(pFile_divider_scratch_wdata, "%032x%032x%032x%032x\n", *(cdf_order_output_image+i-1),*(cdf_order_output_image+i),*(cdf_order_output_image+i+1),*(cdf_order_output_image+i+2));  
+
+        }
+        else if(i % 4 == 2)
+        {
+            fprintf(pFile_divider_scratch_wdata, "%032x%032x%032x%032x\n", *(cdf_order_output_image+i-2),*(cdf_order_output_image+i-1),*(cdf_order_output_image+i),*(cdf_order_output_image+i+1));  
+
+        }
+        else if(i % 4 == 3)
+        {
+            fprintf(pFile_divider_scratch_wdata, "%032x%032x%032x%032x\n", *(cdf_order_output_image+i-3),*(cdf_order_output_image+i-2),*(cdf_order_output_image+i-1),*(cdf_order_output_image+i));  
+        } 
+        
+        fprintf(pFile_divider_scratch_waddr, "%032x\n", i/4); 
+    }
+    //-----------------------------------------------------------------------------------------------
+
+    for(int i = 0; i<n; i++)
 	 {
-    		*(output_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*n); 
-    		for(int j = 0; j< n; j++)
+        *(output_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*m); 
+    		for(int j = 0; j< m; j++)
     		{
             input_image_local = *(*(input_image+i)+j); 
     			*(*(output_image+i) + j) = (*(cdf + input_image_local) - cdf_min)*factor; 
