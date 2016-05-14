@@ -40,10 +40,10 @@ parameter
   COMPLETE         = 5'b10001;
   
   
-reg   [3:0]   state;
+reg   [4:0]   state;
 reg   [6:0]   inp_rd_line_count;
 reg   [6:0]   out_wt_line_count;
-reg   [3:0]   pixel_map_count;
+reg   [4:0]   pixel_map_count;
 reg   [7:0]   index_range_select;
 reg   [127:0] sc_mem_index_val1;
 reg   [127:0] sc_mem_index_val2;
@@ -54,10 +54,10 @@ reg   [127:0] pre_map_data2;
 reg   [127:0] out_wt_data1;
 reg   [127:0] out_wt_data2;
 
-reg   [3:0]   next_state;
+reg   [4:0]   next_state;
 reg   [6:0]   next_inp_rd_line_count;
 reg   [6:0]   next_out_wt_line_count;
-reg   [3:0]   next_pixel_map_count;
+reg   [4:0]   next_pixel_map_count;
 reg   [15:0]  next_inp_mem_rd_addr1;
 reg   [15:0]  next_inp_mem_rd_addr2;
 reg   [15:0]  next_sc_mem_rd_addr1;
@@ -83,7 +83,7 @@ always @(posedge clk) begin
 	state                  <=  IDLE;
 	inp_rd_line_count      <=  7'd0;
 	out_wt_line_count      <=  7'd0;
-	pixel_map_count        <=  7'd0;
+	pixel_map_count        <=  5'd0;
 	index_range_select     <=  7'd0;
 	sc_mem_index_val1      <=  128'd0;
 	sc_mem_index_val2      <=  128'd0;
@@ -131,7 +131,7 @@ case(state)
     IDLE:begin
 		next_inp_rd_line_count    <=  7'd0;
 		next_out_wt_line_count    <=  7'd0;
-		next_pixel_map_count      <=  7'd0;
+		next_pixel_map_count      <=  5'd0;
 		next_index_range_select   <=  8'd0;
 		next_sc_mem_index_val1    <=  128'd0;
 		next_sc_mem_index_val2    <=  128'd0;
@@ -186,7 +186,7 @@ case(state)
 		next_sc_mem_rd_addr2 	  <=  {10'b0000000000, sc_mem_index_val2[7:2]};
 		next_offset_range_select0 <=  {6'b000000, sc_mem_index_val1[1:0]};
 		next_offset_range_select1 <=  {6'b000000, sc_mem_index_val2[1:0]};
-		next_pixel_map_count      <=  pixel_map_count + 7'd2;
+		next_pixel_map_count      <=  pixel_map_count + 5'd1;
 		next_state                <=  IDLE_RD3;
 	end
 	
@@ -217,7 +217,7 @@ case(state)
 		next_out_wt_data2           <=  (out_wt_data2 + (pre_map_data2<<index_range_select));
 		next_index_range_select     <=  index_range_select + 8'd8;
 		
-		if(pixel_map_count >= 7'd64) begin
+		if(pixel_map_count >= 5'd16) begin
 			next_state    <=  WTDATA_1;
 		end
 		else begin
