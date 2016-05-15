@@ -210,15 +210,16 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     } 
     *(cdf + (l<<1)) = min; 
     fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
-    
-    for(int i = 0; i< two_pow_l/4; i = i+ 4)
+   
+    printf("tow_pow_l/4 = %d", (two_pow_l)); 
+    for(int i = 0; i< (two_pow_l+1)/4; i = i + 1)
     {
         fprintf(pFile_scratchmem_dump_for_cdf, "%032x%032x%032x%032x\n", *(h +i), *(h+i+1), *(h+i+2), *(h+i+3) ); 
         fprintf(pFile_scratchmem_dump_for_divider, "%032x%032x%032x%032x\n", *(h +i), *(h+i+1), *(h+i+2), *(h+i+3) ); 
     }
-    for(int i = 0; i< two_pow_l/4; i = i+ 4)
+    for(int j = 0; j< (two_pow_l+1)/4; j = j + 1)
     {
-        fprintf(pFile_scratchmem_dump_for_divider, "%032x%032x%032x%032x\n", *(cdf +i), *(cdf+i+1), *(cdf+i+2), *(cdf+i+3) ); 
+        fprintf(pFile_scratchmem_dump_for_divider, "%032x%032x%032x%032x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
     }
 	 printf("cdf computed successfully \n"); 
     fclose(pFile_cdf_wdata); 
@@ -237,19 +238,21 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
     uint8_t input_image_local;  
     uint8_t** output_image; 
     uint8_t* cdf_order_output_image; 
-    uint32_t two_pow = l <<1;
+    uint32_t two_pow = 1 <<l;
     cdf_min = *(cdf + two_pow); 
     
-    uint32_t factor = 0; 
-    factor = (two_pow-1)/((n*m)-cdf_min); 
+    float factor = 1.0; 
+    factor = (float)(two_pow-1)/((n*m)-cdf_min); 
 
 	 output_image = (uint8_t**)malloc(sizeof(uint8_t*)*n);  	
     cdf_order_output_image  = (uint8_t*)malloc(sizeof(uint8_t)*two_pow); 
 
-    printf("l-1 = %d", l-1); 
-    printf("cdf_min = %d", cdf_min); 
-    printf("n*m -cdf_min = %d", n*m-cdf_min); 
-    printf("factor = %d", factor); 
+    printf("two pow = %d\n", two_pow-1); 
+    printf("l = %d\n", l); 
+    printf("two pow - 1 = %d\n", two_pow-1); 
+    printf("cdf_min = %d\n", cdf_min); 
+    printf("n*m -cdf_min = %d\n", n*m-cdf_min); 
+    printf("factor = %32.32f\n", factor); 
 	 if(!output_image)
 	 	printf("Unable to allocate memory for output image"); 
 
