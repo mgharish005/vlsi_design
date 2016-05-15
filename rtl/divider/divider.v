@@ -18,7 +18,7 @@ wire  [63:0] g_divider_In;
 reg   [63:0] g_dividend_Q;
 reg   [63:0] g_divider_Q;
 
-parameter SIZE = 307200;
+parameter SIZE = 1600;
 parameter LPOW = 8;
 
 assign     g_dividend_In[63:0]    =    (((cdf_in - cdf_min)<<LPOW) - (cdf_in - cdf_min));
@@ -32,7 +32,14 @@ begin
   g_divider_Q  <= 64'd0;
  end
  else begin
-  g_dividend_Q <= g_dividend_In;
+    //if cdf_in is 0, pixel does not exist.
+	if(cdf_in == 32'd0) begin
+		g_dividend_Q   <=  64'd0;
+	end
+	else begin
+    g_dividend_Q <= g_dividend_In;
+	end
+	
   g_divider_Q  <= g_divider_In;
   end
 end

@@ -73,14 +73,28 @@ case(state)
 	  next_term  = term >> 1;
 	  next_state = RUN;
 	  
-	  if(prod <= rem) begin
-	    next_q   = quotient + term;
-		next_rem = rem - prod;
+	  if(g_dividend_Q == 64'd0) begin
+		next_q   = 32'd0;
 	  end
+	  else begin
+	  
+	    if(prod <= rem) begin
+	      next_q   = quotient + term;
+		  next_rem = rem - prod;
+	    end
+	  end
+	  
 	end
     else begin
       next_state = COMPLETE;
-	  next_q     = quotient + term;
+	  
+	  if (g_dividend_Q == 64'd0) begin
+	    next_q     = 32'd0;
+	  end
+	  else begin
+	    next_q     = quotient + term;
+	  end
+	  
     end	  
    end
 
