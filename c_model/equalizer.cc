@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <math.h>
 using namespace std; 
 
 typedef struct uint128_type
@@ -20,6 +21,8 @@ FILE *pFile_cdf_waddr;
 FILE *pFile_cdf_wdata; 
 FILE *pFile_divider_scratch_wdata; 
 FILE *pFile_divider_scratch_waddr; 
+FILE *pFile_divider_output_wdata; 
+FILE *pFile_divider_output_waddr; 
 FILE *pFile_scratchmem_dump_for_divider; 
 FILE *pFile_scratchmem_dump_for_cdf; 
 
@@ -277,27 +280,14 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
 
     for(int i=0; i< two_pow; i++)
     {
-        *(cdf_order_output_image + i) = (*(cdf+i) - cdf_min)*factor;   
-        if(i % 4 == 0)
-        { 
-            fprintf(pFile_divider_scratch_wdata, "%08x%08x%08x%08x\n", *(cdf_order_output_image+(i)),*(cdf_order_output_image+i+1),*(cdf_order_output_image+i+2),*(cdf_order_output_image+i+3));  
-        } 
-        else if(i % 4 == 1)
-        {
-            fprintf(pFile_divider_scratch_wdata, "%08x%08x%08x%08x\n", *(cdf_order_output_image+i-1),*(cdf_order_output_image+i),*(cdf_order_output_image+i+1),*(cdf_order_output_image+i+2));  
-
-        }
-        else if(i % 4 == 2)
-        {
-            fprintf(pFile_divider_scratch_wdata, "%08x%08x%08x%08x\n", *(cdf_order_output_image+i-2),*(cdf_order_output_image+i-1),*(cdf_order_output_image+i),*(cdf_order_output_image+i+1));  
-
-        }
-        else if(i % 4 == 3)
+        *(cdf_order_output_image + i) = (floor) ((*(cdf+i) - cdf_min)*factor);   
+        if(i % 4 == 3)
         {
             fprintf(pFile_divider_scratch_wdata, "%08x%08x%08x%08x\n", *(cdf_order_output_image+i-3),*(cdf_order_output_image+i-2),*(cdf_order_output_image+i-1),*(cdf_order_output_image+i));  
+           fprintf(pFile_divider_scratch_waddr, "%032x\n", i/4); 
         } 
         
-        fprintf(pFile_divider_scratch_waddr, "%032x\n", i/4); 
+
     }
     //-----------------------------------------------------------------------------------------------
 
@@ -306,7 +296,7 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
         *(output_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*m); 
     		for(int j = 0; j< m; j++)
     		{
-            input_image_local = *(*(input_image+i)+j); 
+            		input_image_local = *(*(input_image+i)+j); 
     			*(*(output_image+i) + j) = (*(cdf + input_image_local) - cdf_min)*factor; 
     		}
     }
