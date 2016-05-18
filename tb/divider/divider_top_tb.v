@@ -76,6 +76,6 @@ module divider_top_tb;
   end
   
   initial
-  #3000 $finish;
+  #30000 $finish;
   
 endmodule
