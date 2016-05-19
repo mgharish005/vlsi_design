@@ -1,4 +1,4 @@
-`timescale 1 ns/ 100 ps
+//`timescale 1 ns/ 100 ps
 module cdf_control_tb; 
 
     // inputs from tb to RTL
@@ -6,8 +6,8 @@ module cdf_control_tb;
 	// cdf control RTL outputs
 	wire rfv, smrr, cdf_cd, rnv, cdf_d;
 	// cdf datapath RTL outputs
-	reg [127:0] smi1, smi2;
-	wire [127:0] smo, wbus;
+	wire [127:0] smi1, smi2;
+	wire [127:0] wbus;
 	wire [15:0] wAdd, rAdd1, rAdd2;
 	wire WE;
 	  
@@ -16,12 +16,13 @@ module cdf_control_tb;
     begin
         $dumpfile("cdf_control_tb.vcd"); 
         $dumpvars(0, cdf_control_tb) ;
+		$readmemh("scratchmem_dump_for_cdf.txt", scratch_u0.Register);
         clock = 1; 
         reset = 1; 
         cdf_start = 0; 
 		
-		smi1 = 128'd0;
-		smi2 = 128'd0;
+		//smi1 = 128'd0;
+		//smi2 = 128'd0;
 		
         //sequence
         #10 reset = 0 ;
@@ -54,12 +55,23 @@ module cdf_control_tb;
 		.scratch_mem_read_ready_in(smrr),
 		.cdf_computation_done_in(cdf_cd),
 		.cdf_done_in(cdf_d),
-		.scratchmem_output(smo),
 		.WE(WE),
 		.WriteAddress(wAdd), 
 		.WriteBus(wbus), 
 		.ReadAddress1(rAdd1), 
 		.ReadAddress2(rAdd2)
+	);
+	
+	memory scratch_u0
+	(
+		.clock(clock), 
+		.WE(WE), 
+		.WriteAddress(wAdd),
+		.ReadAddress1(rAdd1),
+		.ReadAddress2(rAdd2), 
+		.WriteBus(wbus), 
+		.ReadBus1(smi1),
+		.ReadBus2(smi2)
 	);
     
   /* Make a regular pulsing clock. */

@@ -76,7 +76,7 @@ always @(posedge clk) begin
   end	
 end
 
-// Overall cdf counter
+// Overall cdf counter - Number of cdfs in this image
 always @(posedge clk) begin
 	if (reset) begin
 		cdf_count <= 0;
@@ -98,6 +98,7 @@ always @(*)
 	begin
 		read_first_value_out = 1'b0;
 		reset_counter = 1'b0;
+		reset_cdf_counter = 1'b0;
 		cdf_computation_done_out = 1'b0;
 		cdf_done_out = 1'b0;
 		scratch_mem_read_ready_out = 1'b0;
@@ -117,6 +118,8 @@ always @(*)
 
 			START :
 			begin
+				reset_cdf_counter = 1'b0;
+				reset_counter = 1'b0;
 				if (cdf_count == 8'd0) begin
 					read_first_value_out = 1'b1;
 				end
@@ -159,7 +162,7 @@ always @(*)
 				cdf_computation_done = 1'b1;
 				if (cdf_count == 8'd63) begin
 					nextState = IMAGE_DONE;
-					reset_counter = 1'b1;
+					reset_cdf_counter = 1'b1;
 				end
 				else begin
 					if (count == 8'd1) begin

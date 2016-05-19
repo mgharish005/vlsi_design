@@ -5,7 +5,7 @@
 // cdf_datapath.v
 //--------------------------------------------
 
-module cdf_datapath (clk, reset, scratchmem_input1, scratchmem_input2, read_first_value_in, scratch_mem_read_ready_in, cdf_computation_done_in, read_next_value_in, cdf_done_in, scratchmem_output, WE, WriteAddress, WriteBus, ReadAddress1, ReadAddress2);
+module cdf_datapath (clk, reset, scratchmem_input1, scratchmem_input2, read_first_value_in, scratch_mem_read_ready_in, cdf_computation_done_in, read_next_value_in, cdf_done_in,  WE, WriteAddress, WriteBus, ReadAddress1, ReadAddress2);
 
 // inputs
 input clk;
@@ -17,7 +17,6 @@ output [15:0] WriteAddress;
 output [127:0] WriteBus;
 output [15:0] ReadAddress1;
 output [15:0] ReadAddress2;
-output [127:0] scratchmem_output;
 
 input [127:0] scratchmem_input1;
 input [127:0] scratchmem_input2;
@@ -38,7 +37,6 @@ reg scratch_mem_read_ready;
 reg cdf_computation_done;
 reg cdf_done;
 reg read_next_value;
-reg [127:0] scratchmem_output;
 reg [127:0] scratchmem_data1;
 reg [127:0] scratchmem_data2;
 wire [31:0] histogram[0:7];
@@ -68,11 +66,13 @@ end
 // flop outputs
 always @(posedge clk)
 begin
+	if (reset) begin
 		WE <= 1'b0;
 		ReadAddress1 <= 16'd400;	// some arbitrary address
 		ReadAddress2 <= 16'd401;
 		WriteAddress <= 0;
-		WriteBus <= 0;			
+		WriteBus <= 0;	
+	end			
 end
 				
 // Use scratchmem inputs as histogram. Requires efficient way of computing cdf					
@@ -95,6 +95,8 @@ begin
 	end
 	else if (cdf_computation_done) begin
 		WriteAddress <= WriteAddress + 16'd1;
+		//ReadAddress1 <= ReadAddress1 + 16'd2;
+		//ReadAddress2 <= ReadAddress2 + 16'd2;
 		//WriteBus <= WriteBus_gen;
 		WE <= 1'b1;
 	end		
