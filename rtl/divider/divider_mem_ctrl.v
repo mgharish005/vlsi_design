@@ -224,7 +224,7 @@ case(wt_state)
 		if(all_div_done && (wt_line_count < 7'd63)) begin
 		   next_wt_state  =  WRITE1;
 		end
-		else if(all_div_done && (wt_line_count >= 7'd63)) begin
+		else if(wt_line_count >= 7'd63) begin
 		   next_wt_state  =  COMPLETE_WT;
 		end
 		else begin

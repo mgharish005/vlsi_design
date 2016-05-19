@@ -18,7 +18,7 @@ module divider_top_tb;
   wire         div_sc_mem_wt_done;
   
   divider_top  divider_top_1(
-	.clk              	  (clk),
+	.clk            	  (clk),
 	.reset            	  (reset),
 	.enable           	  (enable),
 	.cdf_min              (cdf_min),
@@ -35,7 +35,7 @@ module divider_top_tb;
   
   
   memory   scratch_mem(
-    .clock            (clock),
+    .clock            (clk),
     .WE               (div_sc_mem_wt_en),
     .WriteAddress     (div_sc_mem_wt_addr),
 	.ReadAddress1     (div_sc_mem_rd_addr1),
@@ -57,6 +57,7 @@ module divider_top_tb;
   enable = 0;
   #15 reset = 0;
   #100 enable = 1;
+  #100 enable = 0;
   //#300 div_sc_mem_rd_data2 = 128'h00000961000009610000096100000961;
     //   div_sc_mem_rd_data1 = 128'h000012C1000012C1000012C1000012C1;
   
