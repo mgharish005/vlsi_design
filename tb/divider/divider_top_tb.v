@@ -17,6 +17,11 @@ module divider_top_tb;
   wire         div_sc_mem_rd_done;
   wire         div_sc_mem_wt_done;
   
+  integer      div_wtdata_file;
+  integer      scan_file;
+  reg  [127:0] c_model_wdata; 
+
+  
   divider_top  divider_top_1(
 	.clk            	  (clk),
 	.reset            	  (reset),
@@ -48,35 +53,61 @@ module divider_top_tb;
 	
   initial
   begin
+    
+  div_wtdata_file = $fopen("divider_scratch_wdata.txt", "r"); 
+  $dumpfile ("divider_top.vcd");
+  $dumpvars;
+  $readmemh("scratchmem_dump_for_divider.txt", scratch_mem.Register);  
+  
   
   clk = 1;
   reset = 1;
   cdf_min = 32'd18;
-  //div_sc_mem_rd_data1 = 128'h00000961000009610000096100000961;
-  //div_sc_mem_rd_data2 = 128'h000012C1000012C1000012C1000012C1;
+  c_model_wdata = 128'd0;
+
   enable = 0;
   #15 reset = 0;
   #100 enable = 1;
   #100 enable = 0;
-  //#300 div_sc_mem_rd_data2 = 128'h00000961000009610000096100000961;
-    //   div_sc_mem_rd_data1 = 128'h000012C1000012C1000012C1000012C1;
-  
-  end
 
+  
+  #30000 $finish;
+
+  end
+  
+  //Check Write Data Every Write Enable
+  always@(posedge div_sc_mem_wt_en)
+  begin
+	scan_file = $fscanf(div_wtdata_file, "%h\n", c_model_wdata) ;  
+
+    if(!$feof(div_wtdata_file)) 
+    begin
+	  if ((div_sc_mem_wt_data[127:96] != (c_model_wdata[127:96])) &
+	      (div_sc_mem_wt_data[127:96] != (c_model_wdata[127:96] + 32'd1)) & 
+		  (div_sc_mem_wt_data[127:96] != (c_model_wdata[127:96] - 32'd1)) ) begin
+	    $display("Mismatch div_sc_mem_wt_data @ %0t ckt = %x | pli = %x", $stime, div_sc_mem_wt_data[127:96], c_model_wdata[127:96]); 
+      end
+	  if ((div_sc_mem_wt_data[95:64] != (c_model_wdata[95:64])) &
+	      (div_sc_mem_wt_data[95:64] != (c_model_wdata[95:64] + 32'd1)) & 
+		  (div_sc_mem_wt_data[95:64] != (c_model_wdata[95:64] - 32'd1)) ) begin
+	    $display("Mismatch div_sc_mem_wt_data @ %0t ckt = %x | pli = %x", $stime, div_sc_mem_wt_data[95:64], c_model_wdata[95:64]); 
+      end
+	  if ((div_sc_mem_wt_data[63:32] != (c_model_wdata[63:32])) & 
+	      (div_sc_mem_wt_data[63:32] != (c_model_wdata[63:32] + 32'd1)) &
+		  (div_sc_mem_wt_data[63:32] != (c_model_wdata[63:32] - 32'd1)) ) begin
+	    $display("Mismatch div_sc_mem_wt_data @ %0t ckt = %x | pli = %x", $stime, div_sc_mem_wt_data[63:32], c_model_wdata[63:32]); 
+	  end
+	  if ((div_sc_mem_wt_data[31:0] != (c_model_wdata[31:0])) & 
+	      (div_sc_mem_wt_data[31:0] != (c_model_wdata[31:0] + 32'd1)) & 
+		  (div_sc_mem_wt_data[31:0] != (c_model_wdata[31:0] - 32'd1)) ) begin
+	    $display("Mismatch div_sc_mem_wt_data @ %0t ckt = %x | pli = %x", $stime, div_sc_mem_wt_data[31:0], c_model_wdata[31:0]); 
+	  end
+    end
+  end
+  
   
   always 
   #5 clk = !clk;
-  
-  initial
-  begin
-  
-  $dumpfile ("divider_top.vcd");
-  $dumpvars;
-  $readmemh("scratchmem_dump_for_divider.txt", scratch_mem.Register);  
 
-  end
-  
-  initial
-  #30000 $finish;
   
 endmodule
