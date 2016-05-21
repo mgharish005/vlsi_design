@@ -249,6 +249,8 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
 {
 	 pFile_divider_scratch_wdata = fopen("divider_scratch_wdata.txt", "w"); 
 	 pFile_divider_scratch_waddr = fopen("divider_scratch_waddr.txt", "w"); 
+	 pFile_divider_output_wdata = fopen("divider_output_wdata.txt", "w"); 
+	 pFile_divider_output_waddr = fopen("divider_output_waddr.txt", "w"); 
 
     uint8_t input_image_local;  
     uint8_t** output_image; 
@@ -298,9 +300,11 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
     		{
             		input_image_local = *(*(input_image+i)+j); 
     			*(*(output_image+i) + j) = (*(cdf + input_image_local) - cdf_min)*factor; 
+			fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
     		}
+	fprintf(pFile_divider_output_wdata, "\n"); 
     }
-	 printf("output_image computed successfully \n"); 
+    printf("output_image computed successfully \n"); 
     return output_image; 
 }
 int main(int argc, char *argv[])
