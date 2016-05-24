@@ -7,7 +7,7 @@
 
 module cdf_control(clk, reset, cdf_start_in, read_first_value, scratch_mem_read_ready, cdf_computation_done, read_next_value, cdf_done);
 
-parameter WAIT = 0, START = 1, EMPTY1 = 2, READ_READY = 3, COMPUTE = 4, WRITE = 5, IMAGE_DONE = 6;
+parameter WAIT = 0, START = 1, EMPTY1 = 2, READ_READY = 3, COMPUTE = 4, WRITE1 = 5, WRITE2 = 6, IMAGE_DONE = 7;
 
 // inputs
 input clk;
@@ -148,7 +148,7 @@ always @(*)
 			begin
 				scratch_mem_read_ready_out = 1'b0;
 				if (count == 8'd1) begin
-					nextState = WRITE;
+					nextState = WRITE1;
 					reset_counter = 1'b1;
 				end	
 				else begin
@@ -157,7 +157,14 @@ always @(*)
 				end
 			end
 
-			WRITE :
+			WRITE1 :
+			begin
+				cdf_computation_done = 1'b1;
+				reset_counter = 1'b0;
+				nextState = WRITE2;
+			end
+			
+			WRITE2 :
 			begin
 				cdf_computation_done = 1'b1;
 				if (cdf_count == 8'd63) begin
@@ -165,14 +172,8 @@ always @(*)
 					reset_cdf_counter = 1'b1;
 				end
 				else begin
-					if (count == 8'd1) begin
-						nextState = WRITE;
-						reset_counter = 1'b1;
-					end
-					else begin
-						nextState = START;
-						reset_counter = 1'b0;
-					end			
+					nextState = START;
+					reset_counter = 1'b1;
 				end							 			 
 			end
 			
