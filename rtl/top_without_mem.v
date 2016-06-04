@@ -264,7 +264,8 @@ histogram_equalizer_core histogram_equalizer_core_u0
 
 
 //4. to master FSM
-.histogram_computation_done(histogram_computation_done)  
+.histogram_computation_done(histogram_computation_done) , 
+.cdf_done(cdf_done)  
 ); 
 
 

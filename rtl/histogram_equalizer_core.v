@@ -61,7 +61,8 @@ output divider_output_mem_WE,
 output [15:0] divider_output_mem_waddr, 
 
 //4. to master FSM
-output histogram_computation_done  
+output histogram_computation_done,  
+output cdf_done  
 ); 
 
 //wires
@@ -72,6 +73,12 @@ wire set_write_address_scratch_mem;
 wire shift_scratch_memory_rw_address; 
 wire read_data_ready_input_mem; 
 wire read_data_ready_scratch_mem; 
+//cdf
+wire read_first_value; 
+wire read_next_value; 
+wire scratch_mem_read_ready; 
+wire cdf_computation_done; 
+wire cdf_done_in; 
 
 //control path
 histogram_data_path histogram_data_path_u0 
@@ -117,6 +124,39 @@ histogram_control histogram_control_u0
 .histogram_computation_done(histogram_computation_done),
 .read_data_ready_scratch_mem(read_data_ready_scratch_mem)  
 ); 
+
+cdf_control cdf_control_u0
+(
+.clk(clock),
+.reset(reset), 
+.cdf_start_in(cdf_start), 
+
+.read_first_value(read_first_value),
+.scratch_mem_read_ready(scratch_mem_read_ready),
+.cdf_computation_done(cdf_computation_done),
+.read_next_value(read_next_value),
+.cdf_done(cdf_done)
+);
+
+cdf_datapath cdf_datapath_u0
+(
+.clk(clock),
+.reset(reset), 
+.scratchmem_input1(cdf_scratch_mem_rdata0),
+.scratchmem_input2(cdf_scratch_mem_rdata1),
+.read_first_value_in(read_first_value),
+.scratch_mem_read_ready_in(scratch_mem_read_ready),
+.cdf_computation_done_in(cdf_computation_done),
+.read_next_value_in(read_next_value),
+.cdf_done_in(cdf_done),
+
+.WE(cdf_scratch_mem_WE),
+.WriteAddress(cdf_scratch_mem_waddr),
+.WriteBus(cdf_scratch_mem_wdata),
+.ReadAddress1(cdf_scratch_mem_raddr0),
+.ReadAddress2(cdf_scratch_mem_raddr1) 
+); 
+
 
 
 endmodule
