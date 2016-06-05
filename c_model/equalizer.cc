@@ -296,11 +296,13 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
     for(int i = 0; i<n; i++)
 	 {
         *(output_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*m); 
-    		for(int j = 0; j< m; j++)
+    	    for(int j = m-1; j >= 0; j--)
     		{
-            		input_image_local = *(*(input_image+i)+j); 
-    			*(*(output_image+i) + j) = (*(cdf + input_image_local) - cdf_min)*factor; 
-			fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
+            	input_image_local = *(*(input_image+i)+j); 
+                printf("input_image_local = %0d", input_image_local); 
+                printf(" cdf_order_input_image[input_image_local] = %08x\n", *(cdf_order_output_image + input_image_local)); 
+    			*(*(output_image+i) + j) = *(cdf_order_output_image + input_image_local); //(*(cdf + input_image_local) - cdf_min*factor);                    
+			    fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
     		}
 	fprintf(pFile_divider_output_wdata, "\n"); 
     }
