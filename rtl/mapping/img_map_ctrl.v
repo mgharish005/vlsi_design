@@ -9,12 +9,13 @@ input  wire [127:0]  sc_mem_rd_data1,
 input  wire [127:0]  sc_mem_rd_data2,
 output reg  [15:0]   inp_mem_rd_addr1,
 output reg  [15:0]   inp_mem_rd_addr2,
-output reg  [15:0]   sc_mem_rd_addr1,
-output reg  [15:0]   sc_mem_rd_addr2,
+output reg  [15:0]   map_sc_mem_rd_addr1,
+output reg  [15:0]   map_sc_mem_rd_addr2,
 output reg  [127:0]  out_mem_wt_data,
 output reg  [15:0]   out_mem_wt_addr,
 output reg           out_mem_wt_en,
-output reg           output_wt_done
+output reg           output_wt_done,
+output reg           mapping_InProgress
 );
 
 
@@ -60,8 +61,8 @@ reg   [6:0]   next_out_wt_line_count;
 reg   [4:0]   next_pixel_map_count;
 reg   [15:0]  next_inp_mem_rd_addr1;
 reg   [15:0]  next_inp_mem_rd_addr2;
-reg   [15:0]  next_sc_mem_rd_addr1;
-reg   [15:0]  next_sc_mem_rd_addr2;
+reg   [15:0]  next_map_sc_mem_rd_addr1;
+reg   [15:0]  next_map_sc_mem_rd_addr2;
 reg   [7:0]   next_index_range_select;
 reg   [127:0] next_sc_mem_index_val1;
 reg   [127:0] next_sc_mem_index_val2;
@@ -75,6 +76,7 @@ reg   [15:0]  next_out_mem_wt_addr;
 reg           next_out_mem_wt_en;
 reg   [127:0] next_out_mem_wt_data;
 reg           next_output_wt_done;
+reg           next_mapping_InProgress;
 
 //Moore output updates
 always @(posedge clk) begin
@@ -96,6 +98,7 @@ always @(posedge clk) begin
 	out_mem_wt_en          <=  1'b0;
 	out_mem_wt_data        <=  128'd0;
 	output_wt_done         <=  1'b0;
+	mapping_InProgress     <=  1'b0;
   end
   else begin
 	state                  <=  next_state;
@@ -104,8 +107,8 @@ always @(posedge clk) begin
 	pixel_map_count        <=  next_pixel_map_count;
 	inp_mem_rd_addr1       <=  next_inp_mem_rd_addr1;
 	inp_mem_rd_addr2       <=  next_inp_mem_rd_addr2;
-	sc_mem_rd_addr1        <=  next_sc_mem_rd_addr1;
-	sc_mem_rd_addr2        <=  next_sc_mem_rd_addr2;
+	map_sc_mem_rd_addr1    <=  next_map_sc_mem_rd_addr1;
+	map_sc_mem_rd_addr2    <=  next_map_sc_mem_rd_addr2;
 	index_range_select     <=  next_index_range_select;
 	sc_mem_index_val1      <=  next_sc_mem_index_val1;
 	sc_mem_index_val2      <=  next_sc_mem_index_val2;
@@ -119,6 +122,7 @@ always @(posedge clk) begin
 	out_mem_wt_en          <=  next_out_mem_wt_en;
 	out_mem_wt_data        <=  next_out_mem_wt_data;
 	output_wt_done         <=  next_output_wt_done;
+	mapping_InProgress     <=  next_mapping_InProgress;
   end
 end
 
@@ -145,9 +149,11 @@ case(state)
 		next_out_mem_wt_en        <=  1'b0;
 		next_out_mem_wt_data      <=  128'd0;
 		next_output_wt_done       <=  1'b0;
+		next_mapping_InProgress   <=  1'b0;
 		
 		if(div_sc_mem_wt_done) begin
-			next_state    <=   FIRST_INP_RD;
+			next_state                <=   FIRST_INP_RD;
+			next_mapping_InProgress   <=   1'b1;
 		end
 		else begin
 			next_state    <=   IDLE;
@@ -182,8 +188,8 @@ case(state)
 	//State to set scratch read address
 	//based on pixel value from input mem
 	SCMEM_RD:begin
-		next_sc_mem_rd_addr1   	  <=  {10'b0000000000, sc_mem_index_val1[7:2]};
-		next_sc_mem_rd_addr2 	  <=  {10'b0000000000, sc_mem_index_val2[7:2]};
+		next_map_sc_mem_rd_addr1  <=  {10'b0000000000, sc_mem_index_val1[7:2]};
+		next_map_sc_mem_rd_addr2  <=  {10'b0000000000, sc_mem_index_val2[7:2]};
 		next_offset_range_select0 <=  {6'b000000, sc_mem_index_val1[1:0]};
 		next_offset_range_select1 <=  {6'b000000, sc_mem_index_val2[1:0]};
 		next_pixel_map_count      <=  pixel_map_count + 5'd1;
@@ -233,6 +239,7 @@ case(state)
 		next_out_mem_wt_addr        <=  {9'b000000000, out_wt_line_count};
 		next_out_mem_wt_en          <=  1'b1;
 		next_out_wt_line_count      <=  out_wt_line_count + 7'd1;
+		next_pixel_map_count        <=  5'd0;
 		next_state                  <=  IDLE_WT1;
 	end
 	
@@ -284,8 +291,9 @@ case(state)
 	//Completion state to report 
 	//output image map done
 	COMPLETE:begin
-		next_output_wt_done  <=  1'b1;
-		next_state           <=  IDLE;
+		next_output_wt_done       <=  1'b1;
+		next_state                <=  IDLE;
+		next_mapping_InProgress   <=  1'b0;
 	end
 endcase
 end

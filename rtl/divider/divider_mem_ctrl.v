@@ -20,7 +20,8 @@ output reg          div_en_D2,
 output reg          div_en_D3,
 output reg          sc_mem_wt_en,
 output reg          sc_mem_rd_done,
-output reg          sc_mem_wt_done
+output reg          sc_mem_wt_done,
+output reg          div_InProgress
 );
 
 //ALL FSM STATE PARAMETERS
@@ -59,6 +60,7 @@ reg           next_div_en;
 reg           next_sc_mem_wt_en;
 reg           next_sc_mem_rd_done;
 reg           next_sc_mem_wt_done;
+reg           next_div_InProgress;
 reg   [6:0]   rd_line_count;
 reg   [6:0]   wt_line_count;
 reg   [6:0]   next_rd_line_count;
@@ -83,21 +85,23 @@ always @(posedge clk) begin
 	rd_line_count       <= 7'd0;
 	wt_line_count       <= 7'd0;
 	wtdiv_done          <= 1'b0;
+	div_InProgress      <= 1'b0;
   end
   else begin
-    rd_state            <= next_rd_state;
-	wt_state            <= next_wt_state;
-	sc_mem_rd_addr1     <= next_sc_mem_rd_addr1;
-	sc_mem_rd_addr2     <= next_sc_mem_rd_addr2;
-	sc_mem_wt_addr      <= next_sc_mem_wt_addr;
-	sc_mem_rd_data_rdy  <= next_sc_mem_rd_data_rdy;
-	div_en              <= next_div_en;
-	sc_mem_wt_en        <= next_sc_mem_wt_en;
-	sc_mem_rd_done      <= next_sc_mem_rd_done;
-	sc_mem_wt_done      <= next_sc_mem_wt_done;
-	rd_line_count       <= next_rd_line_count;
-	wt_line_count       <= next_wt_line_count;
-	wtdiv_done          <= next_wtdiv_done;
+    rd_state                 <= next_rd_state;
+	wt_state                 <= next_wt_state;
+	sc_mem_rd_addr1          <= next_sc_mem_rd_addr1;
+	sc_mem_rd_addr2          <= next_sc_mem_rd_addr2;
+	sc_mem_wt_addr           <= next_sc_mem_wt_addr;
+	sc_mem_rd_data_rdy       <= next_sc_mem_rd_data_rdy;
+	div_en                   <= next_div_en;
+	sc_mem_wt_en             <= next_sc_mem_wt_en;
+	sc_mem_rd_done           <= next_sc_mem_rd_done;
+	sc_mem_wt_done           <= next_sc_mem_wt_done;
+	rd_line_count            <= next_rd_line_count;
+	wt_line_count            <= next_wt_line_count;
+	wtdiv_done               <= next_wtdiv_done;
+	div_InProgress           <= next_div_InProgress;
   end
 end
 
@@ -119,9 +123,11 @@ case(rd_state)
 		next_sc_mem_rd_data_rdy   =  1'b0;
 		next_div_en               =  1'b0;
 		next_rd_line_count        =  7'd0;
+		next_div_InProgress       =  1'b0;
 		
 		if(enable) begin
-		   next_rd_state  =   FIRST_RD;
+		   next_rd_state          =   FIRST_RD;
+		   next_div_InProgress    =   1'b1;
 		end
 		else begin
 		   next_rd_state  =   IDLE_RD;
@@ -274,8 +280,9 @@ case(wt_state)
     //All div values written and division is complete
     //on last read cdf values
 	COMPLETE_WT:begin
-	    next_sc_mem_wt_done  =  1'b1;
-		next_wt_state        =  IDLE_WT;
+	    next_sc_mem_wt_done       =  1'b1;
+		next_wt_state             =  IDLE_WT;
+		next_div_InProgress       =  1'b0;
 	end
 endcase
 end

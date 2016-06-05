@@ -15,7 +15,8 @@ output wire [15:0]  div_sc_mem_rd_addr2,
 output wire [15:0]  div_sc_mem_wt_addr,
 output wire         div_sc_mem_wt_en,
 output wire         div_sc_mem_rd_done,
-output wire         div_sc_mem_wt_done
+output wire         div_sc_mem_wt_done,
+output wire         div_InProgress
 );
 
 //Wires for modules
@@ -73,7 +74,8 @@ divider_mem_ctrl divider_mem_ctrl (
 	.div_en_D3                 (divider_en_D3),
 	.sc_mem_wt_en              (div_sc_mem_wt_en),
 	.sc_mem_rd_done            (div_sc_mem_rd_done),
-	.sc_mem_wt_done            (div_sc_mem_wt_done)
+	.sc_mem_wt_done            (div_sc_mem_wt_done),
+	.div_InProgress            (div_InProgress)
 	);
 
 //DIVIDER DATAPATH LOGIC

@@ -16,6 +16,7 @@ module divider_top_tb;
   wire         div_sc_mem_wt_en;
   wire         div_sc_mem_rd_done;
   wire         div_sc_mem_wt_done;
+  wire         div_InProgress;
   
   integer      div_wtdata_file;
   integer      scan_file;
@@ -35,7 +36,8 @@ module divider_top_tb;
 	.div_sc_mem_wt_addr   (div_sc_mem_wt_addr),
 	.div_sc_mem_wt_en     (div_sc_mem_wt_en),
 	.div_sc_mem_rd_done   (div_sc_mem_rd_done),
-	.div_sc_mem_wt_done   (div_sc_mem_wt_done)
+	.div_sc_mem_wt_done   (div_sc_mem_wt_done),
+	.div_InProgress       (div_InProgress)
   );
   
   

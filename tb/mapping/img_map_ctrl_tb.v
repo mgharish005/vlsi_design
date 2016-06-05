@@ -18,6 +18,7 @@ module img_map_ctrl_tb;
   wire  [15:0]   out_mem_wt_addr;
   wire           out_mem_wt_en;
   wire           output_wt_done;
+  wire           mapping_InProgress;
   
   img_map_ctrl  mapping_unit1(
 	.clk                   (clk),
@@ -35,7 +36,8 @@ module img_map_ctrl_tb;
 	.out_mem_wt_data       (out_mem_wt_data),
 	.out_mem_wt_addr       (out_mem_wt_addr),
 	.out_mem_wt_en         (out_mem_wt_en),
-	.output_wt_done        (output_wt_done)
+	.output_wt_done        (output_wt_done),
+	.mapping_InProgress    (mapping_InProgress)
   );
   
   
