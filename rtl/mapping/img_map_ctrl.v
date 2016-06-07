@@ -187,9 +187,10 @@ case(state)
 	
 	//State to set scratch read address
 	//based on pixel value from input mem
+	//and update pixel offset select
 	SCMEM_RD:begin
-		next_map_sc_mem_rd_addr1  <=  {10'b0000000000, sc_mem_index_val1[7:2]};
-		next_map_sc_mem_rd_addr2  <=  {10'b0000000000, sc_mem_index_val2[7:2]};
+		next_map_sc_mem_rd_addr1  <=  ({10'b0000000000, sc_mem_index_val1[7:2]} + 16'd128);
+		next_map_sc_mem_rd_addr2  <=  ({10'b0000000000, sc_mem_index_val2[7:2]} + 16'd128);
 		next_offset_range_select0 <=  {6'b000000, sc_mem_index_val1[1:0]};
 		next_offset_range_select1 <=  {6'b000000, sc_mem_index_val2[1:0]};
 		next_pixel_map_count      <=  pixel_map_count + 5'd1;
@@ -198,8 +199,8 @@ case(state)
 	
 	//Idle state 3 for sc mem rd data
 	IDLE_RD3:begin
-		next_offset_range_select0   <=   (offset_range_select0<<5);
-		next_offset_range_select1   <=   (offset_range_select1<<5);
+		next_offset_range_select0   <=   (8'd96 - (offset_range_select0<<5));
+		next_offset_range_select1   <=   (8'd96 - (offset_range_select1<<5));
 		next_state                  <=   IDLE_RD4;
 	end
 	
@@ -240,6 +241,7 @@ case(state)
 		next_out_mem_wt_en          <=  1'b1;
 		next_out_wt_line_count      <=  out_wt_line_count + 7'd1;
 		next_pixel_map_count        <=  5'd0;
+		next_index_range_select     <=  8'd0;
 		next_state                  <=  IDLE_WT1;
 	end
 	
@@ -285,6 +287,8 @@ case(state)
 		next_inp_mem_rd_addr1   <=   inp_mem_rd_addr1 + 16'd2;
 		next_inp_mem_rd_addr2   <=   inp_mem_rd_addr2 + 16'd2;
 		next_inp_rd_line_count  <=   inp_rd_line_count + 7'd2;
+		next_out_wt_data1       <=   128'd0;
+		next_out_wt_data2       <=   128'd0;
 		next_state              <=   IDLE_RD1;
 	end
 	
