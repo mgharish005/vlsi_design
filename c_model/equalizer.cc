@@ -22,6 +22,7 @@ FILE *pFile_cdf_wdata;
 FILE *pFile_divider_scratch_wdata; 
 FILE *pFile_divider_scratch_waddr; 
 FILE *pFile_divider_output_wdata; 
+FILE *pFile_divider_scratch_raddr; 
 FILE *pFile_divider_output_waddr; 
 FILE *pFile_scratchmem_dump_for_divider; 
 FILE *pFile_scratchmem_dump_for_cdf; 
@@ -250,6 +251,7 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
 	 pFile_divider_scratch_wdata = fopen("divider_scratch_wdata.txt", "w"); 
 	 pFile_divider_scratch_waddr = fopen("divider_scratch_waddr.txt", "w"); 
 	 pFile_divider_output_wdata = fopen("divider_output_wdata.txt", "w"); 
+	 pFile_divider_scratch_raddr = fopen("divider_scratch_raddr.txt", "w"); 
 	 pFile_divider_output_waddr = fopen("divider_output_waddr.txt", "w"); 
 
     uint8_t input_image_local;  
@@ -296,11 +298,12 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
     for(int i = 0; i<n; i++)
 	 {
         *(output_image+i) = (uint8_t*)malloc(sizeof(uint8_t)*m); 
-    	    for(int j = m-1; j >= 0; j--)
+    	    for(int j = 0; j<m; j++)
     		{
             	input_image_local = *(*(input_image+i)+j); 
-                printf("input_image_local = %0d", input_image_local); 
-                printf(" cdf_order_input_image[input_image_local] = %08x\n", *(cdf_order_output_image + input_image_local)); 
+              //printf("input_image_local = %0d", input_image_local); 
+              //printf(" cdf_order_input_image[input_image_local] = %08x\n", *(cdf_order_output_image + input_image_local)); 
+                fprintf(pFile_divider_scratch_raddr, "%08x %01x\n", input_image_local >> 2, (input_image_local & 3));  
     			*(*(output_image+i) + j) = *(cdf_order_output_image + input_image_local); //(*(cdf + input_image_local) - cdf_min*factor);                    
 			    fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
     		}
