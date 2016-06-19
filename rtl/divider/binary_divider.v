@@ -105,6 +105,8 @@ case(state)
 	next_state = IDLE;
    end
    
+   default : next_state   =  state;
+   
 endcase
 end
 	

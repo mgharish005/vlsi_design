@@ -196,6 +196,8 @@ case(rd_state)
 	    next_sc_mem_rd_done  =  1'b1;
 		next_rd_state        =  IDLE_RD;
 	end
+	
+	default : next_rd_state   =  rd_state;
 endcase
 end
 
@@ -284,6 +286,8 @@ case(wt_state)
 		next_wt_state             =  IDLE_WT;
 		next_div_InProgress       =  1'b0;
 	end
+	
+	default : next_wt_state   =  wt_state;  
 endcase
 end
 

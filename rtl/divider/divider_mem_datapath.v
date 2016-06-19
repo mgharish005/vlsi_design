@@ -131,6 +131,8 @@ case(rd_state)
 		next_cdfval_todiv8  =  sc_mem_rd_data2[127:96];
 		next_rd_state       =  IDLE_RD;
 	end
+	
+	default : next_rd_state  =  rd_state;
 endcase
 end
 
@@ -187,6 +189,8 @@ case(wt_state)
 	
 		next_wt_state  =  IDLE_WT;
 	end	
+	
+	default : next_wt_state  = wt_state;
 endcase
 end
 
