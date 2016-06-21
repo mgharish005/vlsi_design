@@ -33,7 +33,7 @@ reg read_first_value_out;
 reg read_next_value;
 reg read_next_value_out;
 
-wire cdf_start_in;
+//wire cdf_start_in;
 
 // Variables
 reg [2:0] state = WAIT;

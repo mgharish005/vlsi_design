@@ -129,7 +129,7 @@ cdf_control cdf_control_u0
 (
 .clk(clock),
 .reset(reset), 
-.cdf_start_in(cdf_start), 
+.cdf_start_in(start_cdf), 
 
 .read_first_value(read_first_value),
 .scratch_mem_read_ready(scratch_mem_read_ready),
