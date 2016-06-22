@@ -40,6 +40,7 @@ reg [127:0] local_scratch_memory_data ;
 reg [127:0] wdata ; 
 reg [63:0] has_nz_data; 
 wire scratch_memory_read_out_data_is_not_x ; 
+wire temp; 
 
 
 //address pointer logic for input_memory read
@@ -57,8 +58,8 @@ begin
         begin
             if(!first_time)
             begin
-            input_memory_address_pointer0 <= input_memory_address_pointer0 + 2'd2;  
-            input_memory_address_pointer1 <= input_memory_address_pointer1 + 2'd2;  
+            input_memory_address_pointer0 <= input_memory_address_pointer0 + 16'd2;  
+            input_memory_address_pointer1 <= input_memory_address_pointer1 + 16'd2;  
             end
             first_time <= 1'b0; 
         end
@@ -81,7 +82,8 @@ begin
         if(set_read_address_scratch_mem)
         begin
             scratch_memory_address_pointer0 <= {8'b0, scratch_memory_rw_address[7:0]};
-            offset  <= {8'b0, offset_reg[7:0]}; 
+        //  offset  <= {8'b0, offset_reg[7:0]}; //commented out for lint 
+            offset  <=  offset_reg[7:0]; 
         end
     end
 end
@@ -107,7 +109,7 @@ always@(posedge clock)
 begin
     if(reset)
     begin
-        offset_reg  <= 128'b0;  
+        offset_reg  <= 256'b0;  
     end
     else if(read_data_ready_input_mem) 
     begin 
@@ -124,7 +126,7 @@ always@(posedge clock)
 begin
     if(reset)
     begin
-        scratch_memory_rw_address <= 128'b0;  
+        scratch_memory_rw_address <= 256'b0;  
     end
     else if(read_data_ready_input_mem) 
     begin 
@@ -229,7 +231,8 @@ begin
         begin
             write_enable            <= 1'b1; 
             scratch_memory_wdata    <= wdata;  
-            write_address           <= scratch_memory_rw_address[7:0];  
+          //write_address           <= scratch_memory_rw_address[7:0]; //comment out for LINT 
+            write_address           <= {8'b0, scratch_memory_rw_address[7:0]};  
         end
     end
 end

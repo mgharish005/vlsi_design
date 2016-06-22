@@ -58,7 +58,7 @@ begin
 
     case(current_state)
     S0 :
-    //starting state 
+    //starting stat 
     begin
         //reset control parameters (local reset) ?
         if(start_histogram)
@@ -134,7 +134,11 @@ begin
         else
             next_state = S5;  
     end  
-
+    default : 
+    begin
+        $display("[histogram_control] @%0tns  Invalid state", $stime);
+        next_state = S0; 
+    end
     endcase
 end
 endmodule
