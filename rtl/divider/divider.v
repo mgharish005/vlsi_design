@@ -21,7 +21,7 @@ reg   [63:0] g_divider_Q;
 parameter SIZE = 1600;
 parameter LPOW = 8;
 
-assign     g_dividend_In[63:0]    =    (((cdf_in - cdf_min)<<LPOW) - (cdf_in - cdf_min));
+assign     g_dividend_In[63:0]    =    (({32'd0, (cdf_in - cdf_min)}<<LPOW) - {32'd0, (cdf_in - cdf_min)});
 assign     g_divider_In[63:0]     =    {32'd0, (SIZE - cdf_min)};
 
 

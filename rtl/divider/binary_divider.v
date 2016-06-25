@@ -55,7 +55,7 @@ case(state)
    IDLE:begin  //Waits for Division Enable to begin division
     next_q      = 32'd0;
 	next_rem    = g_dividend_Q;
-	next_prod   = g_divider_Q << 63;
+	next_prod   = {64'd0, g_divider_Q} << 63;
 	next_term   = 64'h8000000000000000;
 	next_done   = 1'b0;
 	
@@ -78,9 +78,9 @@ case(state)
 	  end
 	  else begin
 	  
-	    if(prod <= rem) begin
-	      next_q   = quotient + term;
-		  next_rem = rem - prod;
+	    if(prod <= {64'd0, rem}) begin
+	      next_q   = quotient + term[31:0];
+		  next_rem = rem - prod[63:0];
 	    end
 	  end
 	  
@@ -92,7 +92,7 @@ case(state)
 	    next_q     = 32'd0;
 	  end
 	  else begin
-	    next_q     = quotient + term;
+	    next_q     = quotient + term[31:0];
 	  end
 	  
     end	  

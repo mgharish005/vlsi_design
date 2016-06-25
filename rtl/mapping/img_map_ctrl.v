@@ -86,7 +86,7 @@ always @(posedge clk) begin
 	inp_rd_line_count      <=  7'd0;
 	out_wt_line_count      <=  7'd0;
 	pixel_map_count        <=  5'd0;
-	index_range_select     <=  7'd0;
+	index_range_select     <=  8'd0;
 	sc_mem_index_val1      <=  128'd0;
 	sc_mem_index_val2      <=  128'd0;
 	offset_range_select0   <=  8'd0;
