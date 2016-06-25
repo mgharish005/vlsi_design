@@ -1,4 +1,4 @@
-`include "rtl/divider/binary_divider.v"
+`include "../../rtl/divider/binary_divider.v"
 
 module divider 
 (

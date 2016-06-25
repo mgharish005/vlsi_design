@@ -1,6 +1,6 @@
-`include "rtl/divider/divider.v"
-`include "rtl/divider/divider_mem_ctrl.v"
-`include "rtl/divider/divider_mem_datapath.v"
+`include "../../rtl/divider/divider.v"
+`include "../../rtl/divider/divider_mem_ctrl.v"
+`include "../../rtl/divider/divider_mem_datapath.v"
 
 module divider_top(
 input  wire         clk,

@@ -22,8 +22,6 @@ module dm_top_tb();
   wire [15:0]  out_mem_wt_addr;
   wire         out_mem_wt_en;
   wire         output_wt_done;
-  wire         div_sc_mem_rd_done;
-  wire         div_sc_mem_wt_done;
   wire [15:0]  out_mem_rd_addr1;
   wire [15:0]  out_mem_rd_addr2;
   wire [127:0] out_mem_rd_data1;
@@ -55,9 +53,7 @@ module dm_top_tb();
 	.out_mem_wt_data      (out_mem_wt_data),
 	.out_mem_wt_addr      (out_mem_wt_addr),
 	.out_mem_wt_en        (out_mem_wt_en),
-	.output_wt_done       (output_wt_done),
-	.div_sc_mem_rd_done   (div_sc_mem_rd_done),
-	.div_sc_mem_wt_done   (div_sc_mem_wt_done)
+	.output_wt_done       (output_wt_done)
 	);
     
   memory   scratch_mem(

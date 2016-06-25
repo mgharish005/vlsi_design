@@ -79,6 +79,8 @@ wire read_next_value;
 wire scratch_mem_read_ready; 
 wire cdf_computation_done; 
 wire cdf_done_in; 
+//dm
+wire output_wt_done;
 
 //control path
 histogram_data_path histogram_data_path_u0 
@@ -157,6 +159,29 @@ cdf_datapath cdf_datapath_u0
 .ReadAddress2(cdf_scratch_mem_raddr1) 
 ); 
 
+dm_top   dm_top_u0
+(
+.clk                 (clock),
+.reset               (reset),
+.enable              (start_divider),
+.cdf_min             (32'd18),
+.sc_mem_rd_data1     (divider_scratch_mem_rdata0),
+.sc_mem_rd_data2     (divider_scratch_mem_rdata1),
+.inp_mem_rd_data1    (divider_input_mem_rdata0),
+.inp_mem_rd_data2    (divider_input_mem_rdata1),
+
+.sc_mem_wt_data      (divider_scratch_mem_wdata),
+.sc_mem_rd_addr1     (divider_scratch_mem_raddr0),
+.sc_mem_rd_addr2     (divider_scratch_mem_raddr1),
+.sc_mem_wt_addr      (divider_scratch_mem_waddr),
+.sc_mem_wt_en        (divider_scratch_mem_WE),
+.inp_mem_rd_addr1    (divider_input_mem_raddr0),
+.inp_mem_rd_addr2    (divider_input_mem_raddr1),
+.out_mem_wt_data     (divider_output_mem_wdata),
+.out_mem_wt_addr     (divider_output_mem_waddr),
+.out_mem_wt_en       (divider_output_mem_WE),
+.output_wt_done      (output_wt_done)
+);
 
 
 endmodule

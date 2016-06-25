@@ -1,5 +1,5 @@
-`include "rtl/mapping/img_map_ctrl.v"
-`include "rtl/divider/divider_top.v"
+`include "../../rtl/mapping/img_map_ctrl.v"
+`include "../../rtl/divider/divider_top.v"
 
 module dm_top(
 input  wire         clk,
@@ -20,9 +20,7 @@ output wire [15:0]  inp_mem_rd_addr2,
 output wire [127:0] out_mem_wt_data,
 output wire [15:0]  out_mem_wt_addr,
 output wire         out_mem_wt_en,
-output wire         output_wt_done,
-output wire         div_sc_mem_rd_done,
-output wire         div_sc_mem_wt_done
+output wire         output_wt_done
 );
 
 
@@ -32,6 +30,8 @@ wire  [15:0]  div_sc_mem_rd_addr1;
 wire  [15:0]  div_sc_mem_rd_addr2;
 wire  [15:0]  map_sc_mem_rd_addr1;
 wire  [15:0]  map_sc_mem_rd_addr2;
+wire          div_sc_mem_rd_done;
+wire          div_sc_mem_wt_done;
 
 assign   sc_mem_rd_addr1   =  (div_InProgress) ? div_sc_mem_rd_addr1 : map_sc_mem_rd_addr1;
 assign   sc_mem_rd_addr2   =  (div_InProgress) ? div_sc_mem_rd_addr2 : map_sc_mem_rd_addr2;

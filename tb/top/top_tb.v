@@ -8,6 +8,10 @@
 `include "../../rtl/histogram_equalizer_core.v"
 `include "../../rtl/histogram/histogram_data_path.v"
 `include "../../rtl/histogram/histogram_control.v"
+`include "../../rtl/cdf/cdf_control.v"
+`include "../../rtl/cdf/cdf_datapath.v"
+`include "../../rtl/dm/dm_top.v"
+
 
 
 //`timescale 1 ns/ 100 ps
@@ -36,16 +40,16 @@ module top_tb;
         c_model_wdata[2] = 32'b0; 
         c_model_wdata[3] = 32'b0; 
 
-        input_mem_depth = 1<<16; 
-        scratch_mem_depth = 1<<16; 
-        output_mem_depth = 1<<16; 
+        input_mem_depth = 1<<7; 
+        scratch_mem_depth = 1<<7; 
+        output_mem_depth = 1<<7; 
         //sequence
         #30 reset = 0 ;
         #10 new_image_pulse = 1; 
         #20 new_image_pulse = 0; 
 
 
-        #16500 $finish; 
+        @(posedge top_u0.top_without_mem_u0.histogram_equalizer_core_u0.dm_top_u0.output_wt_done)  $finish;
     end
     
     top top_u0
