@@ -207,8 +207,8 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
         else
             *(cdf) = *h;  
         waddr_in_memory = i / 4;  
-        fprintf(pFile_cdf_waddr, "%032x\n", waddr_in_memory); 
-        fprintf(pFile_cdf_wdata, "%032x\n", *(cdf + i)); 
+      //fprintf(pFile_cdf_waddr, "%032x\n", waddr_in_memory); 
+      //fprintf(pFile_cdf_wdata, "%032x\n", *(cdf + i)); 
 
         //find min
             if(*(cdf+i) < min && *(cdf+i) > 0)
@@ -216,16 +216,13 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     } 
     *(cdf + (l<<1)) = min; 
 
-    fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
+    //to print min
+  //fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
    
     printf("tow_pow_l/4 = %d", (two_pow_l)); 
     printf("min [cdf_compute]= %d", (min)); 
     printf("two_pow_l + 1 /4 = %d", (two_pow_l+1)/4); 
 
- // printf("hisotgrammmm------"); 
- // for(int j = 0 ; j < two_pow_l + 1; j++)
- //     printf("%08x\n", *(h+j));
- // printf("------------------"); 
 
     int i,j; 
     for( i = 0,  j = 0; i< (two_pow_l+1)/4; i = i + 1, j = j + 4)
@@ -237,6 +234,8 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     for(i=0, j = 0; i< (two_pow_l+1)/4; i++, j = j + 4)
     {
         fprintf(pFile_scratchmem_dump_for_divider, "%08x%08x%08x%08x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
+        fprintf(pFile_cdf_wdata, "%08x%08x%08x%08x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
+        fprintf(pFile_cdf_waddr, "%0d\n", i+64); 
     }
 	 printf("cdf computed successfully \n"); 
     fclose(pFile_cdf_wdata); 
