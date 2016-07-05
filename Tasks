@@ -1,6 +1,4 @@
 # vlsi_design
 Pending 
-1. CDF - rtl, verif @ block level (may 14)
-2. divider - verif @ block level 
+1. CDF - rtl, verif @ block level 
 3. top level RTL integration and verif
-4. c_model support for output image. 
