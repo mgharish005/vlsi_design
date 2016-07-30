@@ -27,6 +27,7 @@ FILE *pFile_divider_output_waddr;
 FILE *pFile_scratchmem_dump_for_divider; 
 FILE *pFile_scratchmem_dump_for_cdf; 
 
+uint32_t* cdf;
 void print_bits(uint32_t num)
 {
     uint32_t size = sizeof(uint32_t); 
@@ -189,12 +190,12 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     pFile_scratchmem_dump_for_cdf = fopen("scratchmem_dump_for_cdf.txt", "w"); 
     pFile_scratchmem_dump_for_divider = fopen("scratchmem_dump_for_divider.txt", "w"); 
 
-    uint32_t* cdf;
+
     uint32_t min = 55555;
     uint8_t waddr_in_memory; 
     
     uint32_t two_pow_l = (1<<l) -1 ;  
-    cdf = (uint32_t*)malloc(sizeof(uint32_t)*(two_pow_l+1)); 
+    cdf = (uint32_t*)malloc(sizeof(uint32_t)*(two_pow_l+2)); 
 
     if(!cdf)
 	 	printf("Unable to allocate memory for histogram"); 	
@@ -203,25 +204,22 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     for(int i = 0; i <= two_pow_l; i++)
     {
         if(i) 
+        {
             *(cdf + i) = *(cdf+i - 1) + *(h+i);  
+        }
         else
             *(cdf) = *h;  
         waddr_in_memory = i / 4;  
-      //fprintf(pFile_cdf_waddr, "%032x\n", waddr_in_memory); 
-      //fprintf(pFile_cdf_wdata, "%032x\n", *(cdf + i)); 
-
         //find min
             if(*(cdf+i) < min && *(cdf+i) > 0)
                 min = *(cdf + i);  
     } 
-    *(cdf + (l<<1)) = min; 
 
-    //to print min
-  //fprintf(pFile_cdf_wdata, "%d\n", *(cdf + (l<<1))); 
-   
-    printf("tow_pow_l/4 = %d", (two_pow_l)); 
-    printf("min [cdf_compute]= %d", (min)); 
-    printf("two_pow_l + 1 /4 = %d", (two_pow_l+1)/4); 
+    *(cdf + (1<<l)) = min; 
+    printf("min = %0x\n", *(cdf + (1<<l) + 1) ); 
+
+    printf("two_pow_l/4 = %d\n", (two_pow_l)); 
+    printf("two_pow_l + 1 /4 = %d\n", (two_pow_l+1)/4); 
 
 
     int i,j; 
@@ -233,11 +231,16 @@ uint32_t* compute_cdf(uint32_t* h, uint32_t l)
     }
     for(i=0, j = 0; i< (two_pow_l+1)/4; i++, j = j + 4)
     {
+      //if(i ==4 )
+      //        printf( "[i==4] %032x%032x%032x%032x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
         fprintf(pFile_scratchmem_dump_for_divider, "%08x%08x%08x%08x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
-        fprintf(pFile_cdf_wdata, "%08x%08x%08x%08x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
+        fprintf(pFile_cdf_wdata, "%032x%032x%032x%032x\n", *(cdf +j), *(cdf+j+1), *(cdf+j+2), *(cdf+j+3) ); 
         fprintf(pFile_cdf_waddr, "%0d\n", i+64); 
     }
-	 printf("cdf computed successfully \n"); 
+	 printf("1<<l + 1 = %d\n", (1<<l) + 1); 
+    
+    fprintf(pFile_cdf_wdata, "%032x", *(cdf + (1<<l))); 
+    printf("cdf computed successfully \n"); 
     fclose(pFile_cdf_wdata); 
     fclose(pFile_cdf_waddr); 
     fclose(pFile_scratchmem_dump_for_divider); 
@@ -302,49 +305,49 @@ uint8_t** compute_output(uint32_t* cdf, uint8_t** input_image, uint32_t m, uint3
             	input_image_local = *(*(input_image+i)+j); 
               //printf("input_image_local = %0d", input_image_local); 
               //printf(" cdf_order_input_image[input_image_local] = %08x\n", *(cdf_order_output_image + input_image_local)); 
-                fprintf(pFile_divider_scratch_raddr, "%08x %01x\n", input_image_local >> 2, (input_image_local & 3));  
-    			*(*(output_image+i) + j) = *(cdf_order_output_image + input_image_local); //(*(cdf + input_image_local) - cdf_min*factor);                    
-			    fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
-    		}
-	fprintf(pFile_divider_output_wdata, "\n"); 
+                        fprintf(pFile_divider_scratch_raddr, "%08x %01x\n", input_image_local >> 2, (input_image_local & 3));  
+                        *(*(output_image+i) + j) = *(cdf_order_output_image + input_image_local); //(*(cdf + input_image_local) - cdf_min*factor);                    
+                        fprintf(pFile_divider_output_wdata, "%02x", *(*(output_image+i) + j)); 
+                    }
+            fprintf(pFile_divider_output_wdata, "\n"); 
+            }
+            printf("output_image computed successfully \n"); 
+            return output_image; 
+        }
+        int main(int argc, char *argv[])
+        {
+
+            char trace_file[40]; 
+             strcpy(trace_file, argv[1]); 
+             uint32_t M = atoi(argv[2]); 
+             uint32_t N = atoi(argv[3]); 
+            
+             //File parsing
+             pFile = fopen(trace_file, "r"); 
+
+
+            
+             uint32_t l = 8;
+          // uint32_t two_pow = l<<1;
+             uint8_t **f = NULL; 
+             uint8_t **g = NULL; 
+             uint32_t *h = NULL; 
+             uint32_t *cdf = NULL; 
+             
+            uint32_t cdf_min = 0;
+             
+            //1. load image from file
+             f = load_image(M, N); 
+           
+            //2. draw histogram 
+            h = draw_histogram(f,l, M, N); //there are only 255 bins possible
+            
+            //3. calculate cdf
+            cdf = compute_cdf(h,l);   
+            cdf_min = *(cdf + (1<<l)) ;  
+
+            //4. compute g
+            g = compute_output(cdf, f, M, N, l, cdf_min); 
+            return 0; 
+
     }
-    printf("output_image computed successfully \n"); 
-    return output_image; 
-}
-int main(int argc, char *argv[])
-{
-
-    char trace_file[40]; 
-	 strcpy(trace_file, argv[1]); 
-	 uint32_t M = atoi(argv[2]); 
-	 uint32_t N = atoi(argv[3]); 
-    
-	 //File parsing
-	 pFile = fopen(trace_file, "r"); 
-
-
-    
-	 uint32_t l = 8;
-	 uint32_t two_pow = l<<1;
-	 uint8_t **f = NULL; 
-	 uint8_t **g = NULL; 
-	 uint32_t *h = NULL; 
-	 uint32_t *cdf = NULL; 
-	 
-    uint32_t cdf_min = 0;
-	 
-    //1. load image from file
-  	 f = load_image(M, N); 
-   
-    //2. draw histogram 
-    h = draw_histogram(f,l, M, N); //there are only 255 bins possible
-    
-    //3. calculate cdf
-    cdf = compute_cdf(h,l);   
-    cdf_min = *(cdf + two_pow); 
-
-    //4. compute g
-    g = compute_output(cdf, f, M, N, l, cdf_min); 
-    return 0; 
-
-}
