@@ -7,7 +7,7 @@
 
 module cdf_control(clk, reset, cdf_start_in, read_first_value, scratch_mem_read_ready, cdf_computation_done, read_next_value, cdf_done);
 
-parameter WAIT = 0, START = 1, EMPTY1 = 2, READ_READY = 3, COMPUTE = 4, WRITE1 = 5, WRITE2 = 6, IMAGE_DONE = 7;
+parameter WAIT = 0, START = 1, EMPTY1 = 2, READ_READY = 3, COMPUTE = 4, WRITE1 = 5, EMPTY2 = 6, EMPTY3 = 7, WRITE2 = 8, IMAGE_DONE = 9;
 
 // inputs
 input clk;
@@ -36,8 +36,8 @@ reg read_next_value_out;
 //wire cdf_start_in;
 
 // Variables
-reg [2:0] state = WAIT;
-reg [2:0] nextState;
+reg [3:0] state = WAIT;
+reg [3:0] nextState;
 reg [7:0] count;
 reg [7:0] cdf_count;
 reg reset_counter;
@@ -120,6 +120,7 @@ always @(*)
 			begin
 				reset_cdf_counter = 1'b0;
 				reset_counter = 1'b0;
+                cdf_computation_done_out = 1'b0; 
 				if (cdf_count == 8'd0) begin
 					read_first_value_out = 1'b1;
 				end
@@ -159,14 +160,28 @@ always @(*)
 
 			WRITE1 :
 			begin
-				cdf_computation_done = 1'b1;
+				cdf_computation_done_out = 1'b1;
+				reset_counter = 1'b0;
+				nextState = EMPTY2;
+			end
+
+			EMPTY2 :
+			begin
+				cdf_computation_done_out = 1'b0;
+				reset_counter = 1'b0;
+				nextState = EMPTY3;
+			end
+
+			EMPTY3 :
+			begin
+				cdf_computation_done_out = 1'b0;
 				reset_counter = 1'b0;
 				nextState = WRITE2;
 			end
 			
 			WRITE2 :
 			begin
-				cdf_computation_done = 1'b1;
+				cdf_computation_done_out = 1'b1;
 				if (cdf_count == 8'd63) begin
 					nextState = IMAGE_DONE;
 					reset_cdf_counter = 1'b1;

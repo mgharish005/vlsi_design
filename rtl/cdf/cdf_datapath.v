@@ -77,10 +77,7 @@ end
 always @(posedge clk)
 begin
 	if (reset) begin
-		WE <= 1'b0;
-		ReadAddress1 <= 16'd400;	// some arbitrary address
-		ReadAddress2 <= 16'd401;
-		WriteAddress <= 0;
+
 		WriteBus <= 0;	
 	end			
 end
@@ -95,36 +92,63 @@ assign histogram[5] = scratchmem_data2[95:64];
 assign histogram[6] = scratchmem_data2[63:32];
 assign histogram[7] = scratchmem_data2[31:0];
 		      	
-// Address generator for CDF
+// Read Address generator for CDF
 always @(posedge clk)
 begin
-	if (read_first_value == 1'b1) begin
+    if(reset)
+    begin
+		ReadAddress1 <= 16'd0;	// some arbitrary address
+		ReadAddress2 <= 16'd1;
+    end
+	else if (read_first_value == 1'b1) 
+    begin
 		ReadAddress1 <= 16'd0;
 		ReadAddress2 <= 16'd1;
 		WriteAddress <= 16'd63;
 	end
-	else if (cdf_computation_done) begin
-		WriteAddress <= WriteAddress + 16'd1;
-		//ReadAddress1 <= ReadAddress1 + 16'd2;
-		//ReadAddress2 <= ReadAddress2 + 16'd2;
-		WriteBus <= {cdf0,cdf1,cdf2,cdf3};
-		WE <= 1'b1;
-	end
-	else if (read_next_value) begin
-		WriteAddress <= WriteAddress + 16'd1;
-		WriteBus <= {cdf4,cdf5,cdf6,cdf7};
-		WE <= 1'b1;
-	end		
-	else if (cdf_done) begin
-		WriteAddress <= WriteAddress + 16'd1;
-		//WriteBus <= cdf_min;
-		WE <= 1'b1;
-	end
-	else begin
+    else if (read_next_value == 1'b1)
+    begin
 		ReadAddress1 <= ReadAddress1 + 16'd2;
 		ReadAddress2 <= ReadAddress2 + 16'd2;
+    end
+end
+
+reg cdf_select; 
+
+
+always @(posedge clk)
+begin
+    if(reset)
+    begin
+        cdf_select <= 1'b0;  
+    end
+    else if(cdf_computation_done)
+    begin
+        cdf_select <= !cdf_select; 
+    end
+end
+
+always @(posedge clk)
+begin
+    if(reset)
+    begin
 		WE <= 1'b0;
+        WriteBus<= 16'b0; 
+		WriteAddress <= 128'b0;
+    end
+	else if (cdf_computation_done) 
+    begin
+		WriteAddress <= WriteAddress + 16'd1;
+        if(cdf_select == 1'b0)
+            WriteBus <= {cdf0,cdf1,cdf2,cdf3};
+        else
+            WriteBus <= {cdf4,cdf5,cdf6,cdf7};
+		WE <= 1'b1;
 	end
+    else 
+    begin
+		WE <= 1'b0;
+    end
 end		
 
 // Compute cdf. Store the last cdf to be re-used in next iteration.
