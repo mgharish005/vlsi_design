@@ -79,6 +79,8 @@ wire read_next_value;
 wire scratch_mem_read_ready; 
 wire cdf_computation_done; 
 wire cdf_done_in; 
+wire [31:0] cdf_min; 
+
 //dm
 wire output_wt_done;
 
@@ -156,7 +158,8 @@ cdf_datapath cdf_datapath_u0
 .WriteAddress(cdf_scratch_mem_waddr),
 .WriteBus(cdf_scratch_mem_wdata),
 .ReadAddress1(cdf_scratch_mem_raddr0),
-.ReadAddress2(cdf_scratch_mem_raddr1) 
+.ReadAddress2(cdf_scratch_mem_raddr1), 
+.cdf_min(cdf_min)
 ); 
 
 dm_top   dm_top_u0
