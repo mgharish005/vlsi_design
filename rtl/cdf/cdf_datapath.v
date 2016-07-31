@@ -5,7 +5,7 @@
 // cdf_datapath.v
 //--------------------------------------------
 
-module cdf_datapath (clk, reset, scratchmem_input1, scratchmem_input2, read_first_value_in, scratch_mem_read_ready_in, cdf_computation_done_in, read_next_value_in, cdf_done_in,  WE, WriteAddress, WriteBus, ReadAddress1, ReadAddress2);
+module cdf_datapath (clk, reset, scratchmem_input1, scratchmem_input2, read_first_value_in, scratch_mem_read_ready_in, cdf_computation_done_in, read_next_value_in, cdf_done_in,  WE, WriteAddress, WriteBus, ReadAddress1, ReadAddress2, cdf_min);
 
 // inputs
 input clk;
@@ -17,6 +17,7 @@ output [15:0] WriteAddress;
 output [127:0] WriteBus;
 output [15:0] ReadAddress1;
 output [15:0] ReadAddress2;
+output [31:0] cdf_min;
 
 input [127:0] scratchmem_input1;
 input [127:0] scratchmem_input2;
@@ -32,6 +33,7 @@ reg [15:0] WriteAddress;
 reg [127:0] WriteBus;
 reg [15:0] ReadAddress1;
 reg [15:0] ReadAddress2;
+reg [31:0] cdf_min; 
 reg read_first_value;
 reg scratch_mem_read_ready;
 reg cdf_computation_done;
@@ -73,14 +75,6 @@ begin
 	end
 end
 
-// flop outputs
-always @(posedge clk)
-begin
-	if (reset) begin
-
-		WriteBus <= 0;	
-	end			
-end
 				
 // Use scratchmem inputs as histogram. Requires efficient way of computing cdf					
 assign histogram[0] = scratchmem_data1[127:96];
@@ -174,7 +168,27 @@ begin
 		cdf_prev <= cdf7;
 	end
 end						
-						
+	
+always @(posedge clk)
+begin
+    if(reset)
+    begin
+        cdf_min <= 32'b0; 
+    end
+    if(WE == 1'b1 && cdf_min == 32'b0)
+    begin
+        if (WriteBus[127:96] != 32'b0)
+            cdf_min <= WriteBus[128:96]; 
+        else if (WriteBus[95:64] !=32'b0)
+            cdf_min <= WriteBus[95:64]; 
+        else if (WriteBus[63:32] !=32'b0)
+            cdf_min <= WriteBus[63:32]; 
+        else if (WriteBus[31:0] !=32'b0)
+            cdf_min <= WriteBus[31:0]; 
+    end
+end
+
+
 endmodule						
 						
 						
