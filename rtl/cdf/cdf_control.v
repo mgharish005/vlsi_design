@@ -42,6 +42,7 @@ reg [7:0] count;
 reg [7:0] cdf_count;
 reg reset_counter;
 reg reset_cdf_counter;
+reg incr_cdf_counter;
 
 // Flop inputs
 always @(posedge clk)
@@ -85,8 +86,8 @@ always @(posedge clk) begin
 		if (reset_cdf_counter == 1'b1) begin
 			cdf_count <= 8'd0;
 		end		
-		else begin
-			cdf_count <= cdf_count + 1;
+        else if(incr_cdf_counter) begin
+			cdf_count <= cdf_count + 2;
 		end	
 	end	
 
@@ -100,7 +101,7 @@ always @(*)
 		reset_counter = 1'b0;
 		reset_cdf_counter = 1'b0;
 		cdf_computation_done_out = 1'b0;
-		cdf_done_out = 1'b0;
+        incr_cdf_counter = 1'b0; 
 		scratch_mem_read_ready_out = 1'b0;
 		read_next_value_out = 1'b0;
 	
@@ -118,6 +119,7 @@ always @(*)
 
 			START :
 			begin
+		        cdf_done_out = 1'b0;
 				reset_cdf_counter = 1'b0;
 				reset_counter = 1'b0;
                 cdf_computation_done_out = 1'b0; 
@@ -148,14 +150,8 @@ always @(*)
 			COMPUTE :
 			begin
 				scratch_mem_read_ready_out = 1'b0;
-				if (count == 8'd1) begin
-					nextState = WRITE1;
-					reset_counter = 1'b1;
-				end	
-				else begin
-					nextState = COMPUTE;
-					reset_counter = 1'b0;
-				end
+				nextState = WRITE1;
+				reset_counter = 1'b1;
 			end
 
 			WRITE1 :
@@ -182,7 +178,8 @@ always @(*)
 			WRITE2 :
 			begin
 				cdf_computation_done_out = 1'b1;
-				if (cdf_count == 8'd63) begin
+                incr_cdf_counter = 1'b1;
+				if (cdf_count == 8'd64) begin
 					nextState = IMAGE_DONE;
 					reset_cdf_counter = 1'b1;
 				end
