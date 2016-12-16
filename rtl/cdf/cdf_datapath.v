@@ -19,6 +19,7 @@ output [15:0] ReadAddress1;
 output [15:0] ReadAddress2;
 output [31:0] cdf_min;
 
+
 input [127:0] scratchmem_input1;
 input [127:0] scratchmem_input2;
 input read_first_value_in;
@@ -75,7 +76,6 @@ begin
 	end
 end
 
-				
 // Use scratchmem inputs as histogram. Requires efficient way of computing cdf					
 assign histogram[0] = scratchmem_data1[127:96];
 assign histogram[1] = scratchmem_data1[95:64];
@@ -85,6 +85,7 @@ assign histogram[4] = scratchmem_data2[127:96];
 assign histogram[5] = scratchmem_data2[95:64];
 assign histogram[6] = scratchmem_data2[63:32];
 assign histogram[7] = scratchmem_data2[31:0];
+		      	
 		      	
 // Read Address generator for CDF
 always @(posedge clk)
@@ -98,7 +99,7 @@ begin
     begin
 		ReadAddress1 <= 16'd0;
 		ReadAddress2 <= 16'd1;
-		WriteAddress <= 16'd63;
+
 	end
     else if (read_next_value == 1'b1)
     begin
@@ -129,6 +130,10 @@ begin
 		WE <= 1'b0;
         WriteBus<= 16'b0; 
 		WriteAddress <= 128'b0;
+    end
+    else if (read_first_value)
+    begin
+		WriteAddress <= 16'd63;
     end
 	else if (cdf_computation_done) 
     begin
