@@ -51,7 +51,7 @@ module top_tb;
 		c_model_div_wdata = 128'd0;
         c_model_out_wdata = 128'd0;
 
-        input_mem_depth = 1<<7; 
+        input_mem_depth = 1<<7; //To shorten sim time modify this. For Ex : "1<<4" makes it parse lesser lines
         scratch_mem_depth = 1<<7; 
         output_mem_depth = 1<<7; 
         //sequence
