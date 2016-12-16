@@ -62,17 +62,20 @@ output [15:0] divider_output_mem_waddr,
 
 //4. to master FSM
 output histogram_computation_done,  
-output cdf_done  
+output cdf_done,  
+output divider_done
 ); 
 
 //wires
 wire all_pixel_written; 
+wire all_lines_written; 
 wire set_read_address_input_mem; 
 wire set_read_address_scratch_mem; 
 wire set_write_address_scratch_mem; 
 wire shift_scratch_memory_rw_address; 
 wire read_data_ready_input_mem; 
 wire read_data_ready_scratch_mem; 
+wire extra_writes_en; 
 //cdf
 wire read_first_value; 
 wire read_next_value; 
@@ -92,7 +95,7 @@ histogram_data_path histogram_data_path_u0
 
 .input_memory_rdata0(histogram_input_mem_rdata0), 
 .input_memory_rdata1(histogram_input_mem_rdata1), 
-.scratch_memory_rdata0(histogram_scratch_mem_rdata1), 
+.scratch_memory_rdata0(histogram_scratch_mem_rdata0), 
 
 .input_memory_address_pointer0(histogram_input_mem_raddr0), 
 .input_memory_address_pointer1(histogram_input_mem_raddr1), 
@@ -107,7 +110,9 @@ histogram_data_path histogram_data_path_u0
 .shift_scratch_memory_rw_address(shift_scratch_memory_rw_address), 
 .read_data_ready_input_mem(read_data_ready_input_mem), 
 .read_data_ready_scratch_mem(read_data_ready_scratch_mem), 
-.all_pixel_written(all_pixel_written)  
+.extra_writes_en(extra_writes_en),
+.all_pixel_written(all_pixel_written),  
+.all_lines_written(all_lines_written)  
 
 ); 
 
@@ -119,11 +124,13 @@ histogram_control histogram_control_u0
 .start_histogram(start_histogram), 
 .input_memory_read_finished(input_mem_read_finished), 
 .all_pixel_written(all_pixel_written), 
+.all_lines_written(all_lines_written),  
 
 .set_read_address_input_mem(set_read_address_input_mem), 
 .set_read_address_scratch_mem(set_read_address_scratch_mem), 
 .set_write_address_scratch_mem(set_write_address_scratch_mem), 
 .shift_scratch_memory_rw_address(shift_scratch_memory_rw_address), 
+.extra_writes_en(extra_writes_en),
 .read_data_ready_input_mem(read_data_ready_input_mem), 
 .histogram_computation_done(histogram_computation_done),
 .read_data_ready_scratch_mem(read_data_ready_scratch_mem)  
@@ -183,7 +190,7 @@ dm_top   dm_top_u0
 .out_mem_wt_data     (divider_output_mem_wdata),
 .out_mem_wt_addr     (divider_output_mem_waddr),
 .out_mem_wt_en       (divider_output_mem_WE),
-.output_wt_done      (output_wt_done)
+.output_wt_done      (divider_done)
 );
 
 
