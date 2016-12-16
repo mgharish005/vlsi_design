@@ -16,6 +16,7 @@ output reg [15:0]  scratch_memory_address_pointer0,
 output reg write_enable, 
 output reg [127:0] scratch_memory_wdata, 
 output reg [15:0]  write_address, 
+output all_lines_written,
 
 //control interface inputs
 input set_read_address_input_mem, 
@@ -24,6 +25,7 @@ input set_write_address_scratch_mem,
 input shift_scratch_memory_rw_address, 
 input read_data_ready_input_mem, 
 input read_data_ready_scratch_mem,  
+input extra_writes_en,
 
 //control interface outputs
 output all_pixel_written  
@@ -38,7 +40,9 @@ reg [255:0] scratch_memory_rw_address ;
 reg [255:0] offset_reg ; 
 reg [127:0] local_scratch_memory_data ; 
 reg [127:0] wdata ; 
-reg [63:0] has_nz_data; 
+reg [5:0]   has_nz_data_counter;
+reg [63:0] has_nz_data;
+
 wire scratch_memory_read_out_data_is_not_x ; 
 wire temp; 
 
@@ -203,11 +207,12 @@ begin
   //c = scratch_memory_rdata[63:31]  + 1'b1;   
   //d = scratch_memory_rdata[31: 0]  + 1'b1;   
 
-    case(offset)
-    8'd0 : wdata = {{local_scratch_memory_data[127:96] + 1'b1} , local_scratch_memory_data[95:0]};
-    8'd1 : wdata = {local_scratch_memory_data[127:96], {local_scratch_memory_data[95:64] + 1'b1}, local_scratch_memory_data[63:0]};  
-    8'd2 : wdata = {local_scratch_memory_data[127:64], {local_scratch_memory_data[63:32] + 1'b1}, local_scratch_memory_data[31:0]}; 
-    8'd3 : wdata = {local_scratch_memory_data[127:32], {local_scratch_memory_data[31: 0] + 1'b1} };  
+    case({offset,extra_writes_en})
+    9'bxxxxxxxx_1 : wdata = 128'b0;  
+    9'b00000000_0 : wdata = {{local_scratch_memory_data[127:96] + 1'b1} , local_scratch_memory_data[95:0]};
+    9'b00000001_0 : wdata = {local_scratch_memory_data[127:96], {local_scratch_memory_data[95:64] + 1'b1}, local_scratch_memory_data[63:0]};  
+    9'b00000010_0 : wdata = {local_scratch_memory_data[127:64], {local_scratch_memory_data[63:32] + 1'b1}, local_scratch_memory_data[31:0]}; 
+    9'b00000011_0 : wdata = {local_scratch_memory_data[127:32], {local_scratch_memory_data[31: 0] + 1'b1} };  
 
     default : wdata = 128'b0; //scratch_memory_rdata0; 
     endcase
@@ -225,15 +230,21 @@ begin
     else if(set_read_address_scratch_mem)
     begin
         write_enable <= 1'b0; 
+        scratch_memory_wdata    <= 128'b0;  
+        write_address           <= 16'b0;  
     end 
+
+    else if(set_write_address_scratch_mem)
     begin
-        if(set_write_address_scratch_mem)
-        begin
-            write_enable            <= 1'b1; 
-            scratch_memory_wdata    <= wdata;  
-          //write_address           <= scratch_memory_rw_address[7:0]; //comment out for LINT 
-            write_address           <= {8'b0, scratch_memory_rw_address[7:0]};  
-        end
+        write_enable            <= 1'b1; 
+        scratch_memory_wdata    <= wdata;  
+        write_address           <= {8'b0, scratch_memory_rw_address[7:0]};  
+    end
+    else if (extra_writes_en && !has_nz_data[0])
+    begin
+        write_enable            <= 1'b1; 
+        scratch_memory_wdata    <= 128'b0;  
+        write_address           <= has_nz_data_counter; 
     end
 end
 
@@ -247,9 +258,25 @@ begin
     begin
         has_nz_data <= has_nz_data | (1<<scratch_memory_rw_address[7:0]); 
     end
-
+    else if(extra_writes_en)
+    begin
+        has_nz_data <= {has_nz_data,has_nz_data} >> 1; 
+    end
 end
 
+always@(posedge clock)
+begin
+    if(reset)
+    begin
+        has_nz_data_counter <= 6'b0; 
+    end
+    else if(extra_writes_en)
+    begin
+        has_nz_data_counter <= has_nz_data_counter + 1'b1; 
+    end
+end
+
+assign all_lines_written = (has_nz_data_counter==6'd63);
 endmodule
 
 
