@@ -6,6 +6,7 @@ input reset,
 input start_histogram, 
 input input_memory_read_finished, 
 input all_pixel_written,
+input all_lines_written,
 
 //output---------------------------------
 output reg set_read_address_input_mem, 
@@ -14,6 +15,7 @@ output reg set_write_address_scratch_mem,
 output reg shift_scratch_memory_rw_address,
 output reg read_data_ready_input_mem, 
 output reg histogram_computation_done,   
+output reg extra_writes_en,   
 output reg read_data_ready_scratch_mem  
 ); 
 
@@ -29,7 +31,8 @@ S6 = 4'b0110,
 S7 = 4'b0111, 
 S8 = 4'b1000, 
 S9 = 4'b1001, 
-S10 = 4'b1010; 
+S10 = 4'b1010, 
+S11 = 4'b1011; 
 
 
 reg [3:0] current_state; 
@@ -55,6 +58,7 @@ begin
     shift_scratch_memory_rw_address = 1'b0; 
     read_data_ready_input_mem = 1'b0; 
     read_data_ready_scratch_mem = 1'b0; 
+    extra_writes_en = 1'b0; 
 
     case(current_state)
     S0 :
@@ -88,8 +92,7 @@ begin
         read_data_ready_input_mem = 1'b1; 
         if(input_memory_read_finished == 1)
         begin
-            histogram_computation_done = 1; 
-            next_state = S0; 
+            next_state = S11; // go to complete writes
         end
         else
         begin
@@ -134,6 +137,21 @@ begin
         else
             next_state = S5;  
     end  
+    S11: 
+    //write zeros to those lines which have not been written. 
+    begin
+        if(all_lines_written)
+        begin
+            histogram_computation_done = 1; 
+            next_state = S0; 
+        end
+        else
+        begin
+            histogram_computation_done = 0; 
+            next_state = S11; 
+            extra_writes_en = 1; 
+        end
+    end
     default : 
     begin
         $display("[histogram_control] @%0tns  Invalid state", $stime);
