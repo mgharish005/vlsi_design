@@ -58,7 +58,6 @@ begin
     cdf_start_pulse = 0 ; 
     divider_start_pulse = 0; 
     image_done_pulse = 0; 
-    image_done_pulse = 0; 
     case(current_state)
     S0 : 
     begin
@@ -85,9 +84,9 @@ begin
 
         if(reset)
             next_state = S0; 
-        else if(input_mem_done == 0 | histogram_computation_done)
+        else if(input_mem_done == 1'b0 && histogram_computation_done == 1'b0)
             next_state = S2; 
-        else
+        else if(histogram_computation_done == 1'b1) 
             next_state = S3; 
     end
     S3 : 
