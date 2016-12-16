@@ -75,8 +75,8 @@ memory scratch_memory_u0
 .WriteAddress(scratch_mem_waddr), 
 .ReadBus1(scratch_mem_rdata0), 
 .ReadBus2(scratch_mem_rdata1), 
-.ReadAddress2(scratch_mem_raddr0), 
-.ReadAddress1(scratch_mem_raddr1),  
+.ReadAddress2(scratch_mem_raddr1), 
+.ReadAddress1(scratch_mem_raddr0),  
 .WriteBus(scratch_mem_wdata)
 );
 
