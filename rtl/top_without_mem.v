@@ -1,3 +1,5 @@
+//`timescale 1 ns/ 100 ps
+
 module top_without_mem
 (
 input clock, 
@@ -225,7 +227,7 @@ histogram_equalizer_core histogram_equalizer_core_u0
 .start_histogram(histogram_start_pulse),
 .start_cdf(cdf_start_pulse),
 .start_divider(divider_start_pulse),
-.input_mem_read_finished(input_mem_read_finished),
+.input_mem_read_finished(input_mem_done),
 
 //Outputs------------------------------------------------------
 //1.1 to scratch memory - write
@@ -265,7 +267,8 @@ histogram_equalizer_core histogram_equalizer_core_u0
 
 //4. to master FSM
 .histogram_computation_done(histogram_computation_done) , 
-.cdf_done(cdf_done)  
+.cdf_done(cdf_done), 
+.divider_done(divider_done)
 ); 
 
 
