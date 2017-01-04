@@ -36,10 +36,10 @@ module top_tb;
     begin
         waddr_file = $fopen("hist_scratch_waddr.txt", "r"); 
         wdata_file = $fopen("hist_scratch_wdata.txt", "r"); 
-		div_wtdata_file = $fopen("divider_scratch_wdata.txt", "r"); 
+	div_wtdata_file = $fopen("divider_scratch_wdata.txt", "r"); 
         out_wtdata_file = $fopen("divider_output_wdata.txt", "r"); 
         $dumpfile("top_tb.vcd"); 
-     //   $dumpvars(0, top_tb) ;
+        $dumpvars(0, top_tb) ;
         $readmemh("input_image.txt", top_u0.input_memory_u0.Register);  
 
         clock = 1; 
