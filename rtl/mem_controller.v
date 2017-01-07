@@ -130,8 +130,8 @@ casex({reset, histogram_en, cdf_en, divider_en})
         final_input_mem_raddr0 <= divider_input_mem_raddr0; 
         final_input_mem_raddr1 <= divider_input_mem_raddr1; 
 
-        divider_scratch_mem_rdata0 <= divider_scratch_mem_rdata0; 
-        divider_scratch_mem_rdata1 <= divider_scratch_mem_rdata1; 
+        divider_scratch_mem_rdata0 <= final_scratch_mem_rdata0; 
+        divider_scratch_mem_rdata1 <= final_scratch_mem_rdata1; 
         final_scratch_mem_raddr0 <= divider_scratch_mem_raddr0; 
         final_scratch_mem_raddr1 <= divider_scratch_mem_raddr1; 
         final_scratch_mem_waddr <= 0; 
